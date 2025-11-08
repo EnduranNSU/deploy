@@ -8,7 +8,7 @@ ALTER TABLE
     "user" ADD PRIMARY KEY("id");
 
 CREATE TABLE "exercise"(
-    "id" BIGINT NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "description" TEXT NOT NULL,
     "href" TEXT NOT NULL,
     "tags" BIGINT NOT NULL
@@ -17,7 +17,7 @@ ALTER TABLE
     "exercise" ADD PRIMARY KEY("id");
 
 CREATE TABLE "tag"(
-    "id" BIGINT NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "type" VARCHAR(255) CHECK
         ("type" IN('')) NOT NULL
 );
@@ -30,7 +30,7 @@ CREATE TABLE "exercise_to_tag"(
 );
 
 CREATE TABLE "training"(
-    "id" BIGINT NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "user_id" UUID NOT NULL,
     "isDone" BOOLEAN NOT NULL,
     "planned" DATE NOT NULL,
@@ -42,7 +42,7 @@ ALTER TABLE
     "training" ADD PRIMARY KEY("id");
 
 CREATE TABLE "trained_exercise"(
-    "id" BIGINT NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "training_id" BIGINT NOT NULL,
     "exercise_id" BIGINT NOT NULL,
     "weight" FLOAT(53) NULL,
@@ -55,7 +55,7 @@ ALTER TABLE
     "trained_exercise" ADD PRIMARY KEY("id");
 
 CREATE TABLE "recommedantion"(
-    "id" BIGINT NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "training_id" BIGINT NOT NULL,
     "approach" BIGINT NULL,
     "weight" FLOAT(53) NULL,
@@ -66,7 +66,7 @@ ALTER TABLE
     "recommedantion" ADD PRIMARY KEY("id");
 
 CREATE TABLE "user_info"(
-    "id" BIGINT NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "weight" FLOAT(53) NOT NULL,
     "height" BIGINT NOT NULL,
     "date" DATE NOT NULL,
