@@ -1,0 +1,74 @@
+{
+  "Широчайшие мышцы": {
+    "key": "verh",
+    "exercises": {}
+  },
+  "Поясница": {
+    "key": "poias",
+    "exercises": {}
+  },
+  "Трапеции": {
+    "key": "trap",
+    "exercises": {}
+  },
+  "Шея": {
+    "key": "sheia",
+    "exercises": {}
+  },
+  "Ягодицы": {
+    "key": "iagod",
+    "exercises": {}
+  },
+  "Косые мышцы": {
+    "key": "kosie",
+    "exercises": {}
+  },
+  "Передняя дельта": {
+    "key": "pered",
+    "exercises": {}
+  },
+  "Средняя дельта": {
+    "key": "sred",
+    "exercises": {}
+  },
+  "Задняя дельта": {
+    "key": "zad",
+    "exercises": {}
+  },
+  "Бицепс": {
+    "key": "biceps",
+    "exercises": {}
+  },
+  "Трицепс": {
+    "key": "tric",
+    "exercises": {}
+  },
+  "Предплечья": {
+    "key": "predp",
+    "exercises": {}
+  },
+  "Грудь": {
+    "key": "gryd",
+    "exercises": {}
+  },
+  "Задняя часть бедра": {
+    "key": "zpb",
+    "exercises": {}
+  },
+  "Внутренняя часть бедра": {
+    "key": "vpb",
+    "exercises": {}
+  },
+  "Передняя часть бедра": {
+    "key": "ppb",
+    "exercises": {}
+  },
+  "Наружная часть бедра": {
+    "key": "npb",
+    "exercises": {}
+  },
+  "Голень": {
+    "key": "golen",
+    "exercises": {}
+  }
+}
