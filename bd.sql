@@ -92,8 +92,6 @@ CREATE TABLE "user_info"(
 );
 
 -- Индексы для производительности
-CREATE INDEX idx_user_email ON "user"(email);
-CREATE INDEX idx_user_tg_id ON "user"(tg_id);
 CREATE INDEX idx_training_user_id ON "training"(user_id);
 CREATE INDEX idx_training_planned_date ON "training"(planned_date);
 CREATE INDEX idx_training_is_done ON "training"(is_done);
@@ -102,6 +100,7 @@ CREATE INDEX idx_trained_exercise_exercise_id ON "trained_exercise"(exercise_id)
 CREATE INDEX idx_exercise_to_tag_exercise_id ON "exercise_to_tag"(exercise_id);
 CREATE INDEX idx_exercise_to_tag_tag_id ON "exercise_to_tag"(tag_id);
 CREATE INDEX idx_user_info_user_id ON "user_info"(user_id);
+CREATE INDEX idx_user_info_user_id_date ON "user_info"(user_id, date DESC);
 CREATE INDEX idx_global_training_exercise_training_id ON "global_training_exercise"(global_training_id);
 CREATE INDEX idx_global_training_exercise_exercise_id ON "global_training_exercise"(exercise_id);
 
