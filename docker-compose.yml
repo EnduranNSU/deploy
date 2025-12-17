@@ -1,4 +1,21 @@
 services:
+  kong:
+    image: kong:3.4
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /etc/kong/kong.yml
+      KONG_PROXY_LISTEN: 0.0.0.0:8000
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    volumes:
+      - ./kong.yml:/etc/kong/kong.yml
+
   postgres:
     image: postgres:15-alpine
     container_name: postgres_db
@@ -7,4 +24,46 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     ports:
-      - "5432:5432" 
+      - "5432:5432"
+    volumes:
+      - ./bd.sql:/docker-entrypoint-initdb.d/bd.sql
+    networks:
+      - enduran
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  user-info:
+    build:
+      context: ./end-user-info
+      dockerfile: Dockerfile
+    volumes:
+      - ./end-user-info/config/config.yaml:/app/config/config.yaml
+    ports:
+      - "8081:8080"
+    networks:
+      - enduran
+    depends_on:
+      postgres:
+        condition: service_healthy  
+
+  training:
+    build:
+      context: ./trainings
+      dockerfile: Dockerfile
+    volumes:
+      - ./trainings/config/config.yaml:/app/config/config.yaml
+    ports:
+      - "8080:8080"
+    networks:
+      - enduran
+    depends_on:
+      postgres:
+        condition: service_healthy  
+
+networks:
+  enduran:
+    driver: bridge
