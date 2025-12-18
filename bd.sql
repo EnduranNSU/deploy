@@ -147,7 +147,7 @@ CREATE INDEX idx_global_training_exercise_exercise_id ON "global_training_exerci
 -- Внешние ключи
 ALTER TABLE "training"
     ADD CONSTRAINT "training_user_id_foreign" 
-    FOREIGN KEY("user_id") REFERENCES "user"("id") ON DELETE CASCADE;
+    FOREIGN KEY("user_id") REFERENCES "userы"("id") ON DELETE CASCADE;
 
 ALTER TABLE "trained_exercise"
     ADD CONSTRAINT "trained_exercise_training_id_foreign" 

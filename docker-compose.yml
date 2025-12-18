@@ -27,12 +27,10 @@ services:
       POSTGRES_DB: myapp
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_MULTIPLE_DATABASES: "auth,userinfo,training"  # Добавляем поддержку нескольких БД
     ports:
       - "5432:5432"
     volumes:
       - ./bd.sql:/docker-entrypoint-initdb.d/bd.sql
-      - ./init-multiple-databases.sh:/docker-entrypoint-initdb.d/init-multiple-databases.sh  # Скрипт для создания нескольких БД
     networks:
       - enduran
     healthcheck:
