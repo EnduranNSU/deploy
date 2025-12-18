@@ -1,9 +1,0 @@
-[submodule "auth"]
-	path = auth
-	url = git@github.com:EnduranNSU/auth.git
-[submodule "user-info"]
-	path = user-info
-	url = git@github.com:EnduranNSU/user-info.git
-[submodule "trainings"]
-	path = trainings
-	url = git@github.com:EnduranNSU/trainings.git
