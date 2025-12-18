@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   kong:
     image: kong:3.4
@@ -15,6 +17,8 @@ services:
       - "8001:8001"
     volumes:
       - ./kong.yml:/etc/kong/kong.yml
+    networks:
+      - enduran
 
   postgres:
     image: postgres:15-alpine
@@ -23,10 +27,12 @@ services:
       POSTGRES_DB: myapp
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
+      POSTGRES_MULTIPLE_DATABASES: "auth,userinfo,training"  # Добавляем поддержку нескольких БД
     ports:
       - "5432:5432"
     volumes:
       - ./bd.sql:/docker-entrypoint-initdb.d/bd.sql
+      - ./init-multiple-databases.sh:/docker-entrypoint-initdb.d/init-multiple-databases.sh  # Скрипт для создания нескольких БД
     networks:
       - enduran
     healthcheck:
@@ -46,9 +52,12 @@ services:
       - "8081:8080"
     networks:
       - enduran
+    restart: on-failure
     depends_on:
       postgres:
-        condition: service_healthy  
+        condition: service_healthy
+    environment:
+      - CONFIG_FILE=/app/config/config.yaml
 
   training:
     build:
@@ -60,9 +69,29 @@ services:
       - "8080:8080"
     networks:
       - enduran
+    restart: on-failure
     depends_on:
       postgres:
-        condition: service_healthy  
+        condition: service_healthy
+    environment:
+      - CONFIG_FILE=/app/config/config.yaml
+
+  auth:
+    build:
+      context: ./auth
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - enduran
+    volumes:
+      - ./auth/config/config.yaml:/app/config/config.yaml:ro  # Изменен путь
+    environment:
+      - CONFIG_FILE=/app/config/config.yaml
+    ports:
+      - "8082:8082"
 
 networks:
   enduran:
