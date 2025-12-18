@@ -57,10 +57,10 @@ services:
 
   training:
     build:
-      context: ./trainings
+      context: ./end-trainings
       dockerfile: Dockerfile
     volumes:
-      - ./trainings/config/config.yaml:/app/config/config.yaml
+      - ./end-trainings/config/config.yaml:/app/config/config.yaml
     ports:
       - "8080:8080"
     networks:
@@ -72,7 +72,7 @@ services:
 
   auth:
     build:
-      context: ./auth
+      context: ./end-auth
       dockerfile: Dockerfile
     depends_on:
       postgres:
@@ -81,7 +81,7 @@ services:
     networks:
       - enduran
     volumes:
-      - ./auth/config/config.yaml:/app/config/config.yaml:ro
+      - ./end-auth/config/config.yaml:/app/config/config.yaml:ro
     ports:
       - "8082:8082"
 

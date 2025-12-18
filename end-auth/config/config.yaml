@@ -1,0 +1,20 @@
+http:
+  addr: ":8082"
+
+db:
+  dsn: "postgres://postgres:password@postgres:5432/myapp?sslmode=disable"
+  
+logger:
+  level: "debug"
+  console:
+    enable: true
+    encoding: "text"
+  file:
+    enable: false
+
+svc:
+  issuer: "enduran-auth"
+  jwtSecret: "devsecret"
+  accessTTL: "15m"
+  refreshTTL: "720h"
+  resetOTPTTL: "15m"
