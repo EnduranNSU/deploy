@@ -516,7 +516,11 @@ func (r *TrainingRepositoryImpl) GetGlobalTrainings(ctx context.Context) ([]*dom
 
 	globalTrainings := make([]*domain.GlobalTraining, len(globalTrainingRows))
 	for i, gt := range globalTrainingRows {
-		globalTrainings[i] = r.toDomainGlobalTraining(gt)
+		globalTrainings[i] = r.toDomainGlobalTraining(GlobalTrainingRow{
+			ID: gt.ID,
+			Level: gt.Level,
+			Exercises: gt.Exercises,
+		})
 	}
 
 	jsonData := logging.MarshalLogData(map[string]interface{}{
@@ -527,8 +531,31 @@ func (r *TrainingRepositoryImpl) GetGlobalTrainings(ctx context.Context) ([]*dom
 	return globalTrainings, nil
 }
 
-func (r *TrainingRepositoryImpl) GetGlobalTrainingByLevel(ctx context.Context, level string) (*domain.GlobalTraining, error) {
-	globalTrainingRow, err := r.q.GetGlobalTrainingByLevel(ctx, level)
+func (r *TrainingRepositoryImpl) GetGlobalTrainingById(ctx context.Context, trainingID int64) (*domain.GlobalTraining, error) {
+	gt, err := r.q.GetGlobalTrainingByID(ctx, trainingID)
+	if err != nil {
+		logging.Error(err, "GetGlobalTrainings", nil, "failed to get global trainings")
+		return nil, err
+	}
+
+	globalTraining := r.toDomainGlobalTraining(GlobalTrainingRow{
+			ID: gt.ID,
+			Level: gt.Level,
+			Exercises: gt.Exercises,
+		})
+
+	jsonData := logging.MarshalLogData(map[string]interface{}{
+		"Id": globalTraining.ID,
+		"Level": globalTraining.Level,
+		"Exercises": globalTraining.Exercises,
+	})
+	logging.Debug("GetGlobalTrainings", jsonData, "successfully retrieved global trainings")
+
+	return globalTraining, nil
+}
+
+func (r *TrainingRepositoryImpl) GetGlobalTrainingByLevel(ctx context.Context, level string) ([]*domain.GlobalTraining, error) {
+	globalTrainingRows, err := r.q.GetGlobalTrainingByLevel(ctx, level)
 	if err != nil {
 		jsonData := logging.MarshalLogData(map[string]interface{}{
 			"level": level,
@@ -537,36 +564,20 @@ func (r *TrainingRepositoryImpl) GetGlobalTrainingByLevel(ctx context.Context, l
 		return nil, err
 	}
 
-	globalTraining := r.toDomainGlobalTrainingByLevel(globalTrainingRow)
-
+	globalTrainings := make([]*domain.GlobalTraining, len(globalTrainingRows))
+	for i, gt := range globalTrainingRows {
+		globalTrainings[i] = r.toDomainGlobalTraining(GlobalTrainingRow{
+			ID: gt.ID,
+			Level: gt.Level,
+			Exercises: gt.Exercises,
+		})
+	}
 	jsonData := logging.MarshalLogData(map[string]interface{}{
-		"level":           level,
-		"exercises_count": len(globalTraining.Exercises),
+		"trainings_count": len(globalTrainings),
 	})
 	logging.Debug("GetGlobalTrainingByLevel", jsonData, "successfully retrieved global training by level")
 
-	return globalTraining, nil
-}
-
-func (r *TrainingRepositoryImpl) GetGlobalTrainingWithTags(ctx context.Context, level string) (*domain.GlobalTraining, error) {
-	globalTrainingRow, err := r.q.GetGlobalTrainingWithTags(ctx, level)
-	if err != nil {
-		jsonData := logging.MarshalLogData(map[string]interface{}{
-			"level": level,
-		})
-		logging.Error(err, "GetGlobalTrainingWithTags", jsonData, "failed to get global training with tags")
-		return nil, err
-	}
-
-	globalTraining := r.toDomainGlobalTrainingWithTags(globalTrainingRow)
-
-	jsonData := logging.MarshalLogData(map[string]interface{}{
-		"level":           level,
-		"exercises_count": len(globalTraining.Exercises),
-	})
-	logging.Debug("GetGlobalTrainingWithTags", jsonData, "successfully retrieved global training with tags")
-
-	return globalTraining, nil
+	return globalTrainings, nil
 }
 
 func (r *TrainingRepositoryImpl) MarkTrainingAsDone(ctx context.Context, trainingID int64, userID uuid.UUID) (*domain.Training, error) {
@@ -764,79 +775,18 @@ func (r *TrainingRepositoryImpl) CalculateTrainingTotalTime(ctx context.Context,
 	return trainingTime, nil
 }
 
-func (r *TrainingRepositoryImpl) toDomainGlobalTraining(gt gen.GetGlobalTrainingsRow) *domain.GlobalTraining {
-	training := &domain.GlobalTraining{
-		ID: gt.ID,
-		Level: gt.Level,
-	}
-	if gt.Exercises != nil {
-		if exercisesSlice, ok := gt.Exercises.([]gen.Exercise); ok {
-			exercises := make([]domain.Exercise, len(exercisesSlice))
-			for i, ex := range exercisesSlice {
-				exercises[i] = domain.Exercise{
-					ID: ex.ID,
-					Description: ex.Description,
-					Href: ex.Href,
-				}
-			}
-			training.Exercises = exercises
-		}
-	}
-	return training
+type GlobalTrainingRow struct {
+	ID   int64  `json:"id"`
+	Level string `json:"level"`
+	Exercises interface{} `json:"exercises"`
 }
 
-func (r *TrainingRepositoryImpl) toDomainGlobalTrainingByLevel(gt gen.GetGlobalTrainingByLevelRow) *domain.GlobalTraining {
-	training := &domain.GlobalTraining{
+func (r *TrainingRepositoryImpl) toDomainGlobalTraining(gt GlobalTrainingRow) *domain.GlobalTraining {
+	return &domain.GlobalTraining{
 		ID: gt.ID,
 		Level: gt.Level,
+		Exercises: toDomainExercise(gt.Exercises),
 	}
-	if gt.Exercises != nil {
-		if exercisesSlice, ok := gt.Exercises.([]gen.Exercise); ok {
-			exercises := make([]domain.Exercise, len(exercisesSlice))
-			for i, ex := range exercisesSlice {
-				exercises[i] = domain.Exercise{
-					ID: ex.ID,
-					Description: ex.Description,
-					Href: ex.Href,
-				}
-			}
-			training.Exercises = exercises
-		}
-	}
-	return training
-}
-
-func (r *TrainingRepositoryImpl) toDomainGlobalTrainingWithTags(gt gen.GetGlobalTrainingWithTagsRow) *domain.GlobalTraining {
-	training := &domain.GlobalTraining{
-		ID: gt.ID,
-		Level: gt.Level,
-	}
-	if gt.Exercises != nil {
-		if exercisesSlice, ok := gt.Exercises.([]gen.GetExercisesWithTagsRow); ok {
-			exercises := make([]domain.Exercise, len(exercisesSlice))
-			for i, ex := range exercisesSlice {
-				exercises[i] = domain.Exercise{
-					ID: ex.ID,
-					Description: ex.Description,
-					Href: ex.Href,
-				}
-				if ex.Tags != nil {
-					if tagsSlice, ok := ex.Tags.([]gen.Tag); ok {
-						tags := make([]domain.Tag, len(tagsSlice))
-						for j, t := range tagsSlice {
-							tags[j] = domain.Tag{
-								ID: t.ID,
-								Type: t.Type,
-							}
-						}
-						exercises[i].Tags = tags
-					}
-				}
-			}
-			training.Exercises = exercises
-		}
-	}
-	return training
 }
 
 

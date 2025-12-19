@@ -270,7 +270,7 @@ GROUP BY t.id
 ORDER BY t.planned_date DESC;
 
 -- name: GetGlobalTrainings :many
--- Получение всех глобальных тренировок
+-- Получение всех глобальных тренировок с упражнениями и их тегами
 SELECT 
     gt.id,
     gt.level,
@@ -279,7 +279,21 @@ SELECT
             json_build_object(
                 'id', e.id,
                 'description', e.description,
-                'href', e.href
+                'href', e.href,
+                'tags', COALESCE(
+                    (
+                        SELECT json_agg(
+                            json_build_object(
+                                'id', t.id,
+                                'type', t.type
+                            )
+                        )
+                        FROM exercise_to_tag et2
+                        JOIN tag t ON et2.tag_id = t.id
+                        WHERE et2.exercise_id = e.id
+                    ),
+                    '[]'
+                )
             )
         ) FILTER (WHERE e.id IS NOT NULL),
         '[]'
@@ -295,8 +309,8 @@ ORDER BY
         WHEN 'advanced' THEN 3
     END;
 
--- name: GetGlobalTrainingByLevel :one
--- Получение глобальной тренировки по уровню
+-- name: GetGlobalTrainingByID :one
+-- Получение глобальной тренировки по ID с упражнениями и их тегами
 SELECT 
     gt.id,
     gt.level,
@@ -305,7 +319,21 @@ SELECT
             json_build_object(
                 'id', e.id,
                 'description', e.description,
-                'href', e.href
+                'href', e.href,
+                'tags', COALESCE(
+                    (
+                        SELECT json_agg(
+                            json_build_object(
+                                'id', t.id,
+                                'type', t.type
+                            )
+                        )
+                        FROM exercise_to_tag et2
+                        JOIN tag t ON et2.tag_id = t.id
+                        WHERE et2.exercise_id = e.id
+                    ),
+                    '[]'
+                )
             )
         ) FILTER (WHERE e.id IS NOT NULL),
         '[]'
@@ -313,17 +341,17 @@ SELECT
 FROM global_training gt
 LEFT JOIN global_training_exercise gte ON gt.id = gte.global_training_id
 LEFT JOIN exercise e ON gte.exercise_id = e.id
-WHERE gt.level = $1
+WHERE gt.id = $1
 GROUP BY gt.id, gt.level;
 
--- name: GetGlobalTrainingWithTags :one
--- Получение глобальной тренировки с тегами упражнений
+-- name: GetGlobalTrainingByLevel :many
+-- Получение глобальных тренировок по уровню с упражнениями и их тегами
 SELECT 
     gt.id,
     gt.level,
     COALESCE(
         json_agg(
-            DISTINCT json_build_object(
+            json_build_object(
                 'id', e.id,
                 'description', e.description,
                 'href', e.href,
@@ -331,12 +359,12 @@ SELECT
                     (
                         SELECT json_agg(
                             json_build_object(
-                                'id', t2.id,
-                                'type', t2.type
+                                'id', t.id,
+                                'type', t.type
                             )
                         )
                         FROM exercise_to_tag et2
-                        JOIN tag t2 ON et2.tag_id = t2.id
+                        JOIN tag t ON et2.tag_id = t.id
                         WHERE et2.exercise_id = e.id
                     ),
                     '[]'
@@ -349,7 +377,8 @@ FROM global_training gt
 LEFT JOIN global_training_exercise gte ON gt.id = gte.global_training_id
 LEFT JOIN exercise e ON gte.exercise_id = e.id
 WHERE gt.level = $1
-GROUP BY gt.id, gt.level;
+GROUP BY gt.id, gt.level
+ORDER BY gt.id;
 
 -- name: MarkTrainingAsDone :one
 -- Отметить тренировку как выполненную

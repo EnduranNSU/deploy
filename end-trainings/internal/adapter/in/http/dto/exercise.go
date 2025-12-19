@@ -18,8 +18,6 @@ type TagResponse struct {
 type SearchExercisesRequest struct {
 	Query  string `json:"query" form:"query" example:"жим" description:"Поисковый запрос"`
 	TagID  *int64 `json:"tag_id,omitempty" form:"tag_id" example:"1" description:"ID тега для фильтрации (опционально)"`
-	Limit  *int   `json:"limit,omitempty" form:"limit" example:"20" description:"Лимит результатов (опционально)"`
-	Offset *int   `json:"offset,omitempty" form:"offset" example:"0" description:"Смещение для пагинации (опционально)"`
 }
 
 // GetExercisesByMultipleTagsRequest представляет запрос на получение упражнений по нескольким тегам

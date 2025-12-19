@@ -174,3 +174,528 @@ ALTER TABLE "exercise_to_tag"
     FOREIGN KEY("tag_id") REFERENCES "tag"("id") ON DELETE CASCADE,
     ADD CONSTRAINT "exercise_to_tag_exercise_id_foreign" 
     FOREIGN KEY("exercise_id") REFERENCES "exercise"("id") ON DELETE CASCADE;
+
+
+-- 1. Сначала создаем ВСЕХ пользователей, включая тех, которые упоминаются в тренировках
+INSERT INTO users (id, email, password_hash, is_blocked, last_login_at, created_at, updated_at) VALUES
+-- Основные пользователи для тестирования
+('11111111-1111-1111-1111-111111111111', 'alex.ivanov@gmail.com', crypt('password123', gen_salt('bf')), false, '2024-01-15 14:30:00+03', '2024-01-01 10:00:00+03', '2024-01-15 14:30:00+03'),
+('22222222-2222-2222-2222-222222222222', 'maria.petrova@yandex.ru', crypt('qwerty123', gen_salt('bf')), false, '2024-01-14 09:15:00+03', '2024-01-05 12:00:00+03', '2024-01-14 09:15:00+03'),
+('33333333-3333-3333-3333-333333333333', 'sidorov_s@mail.ru', crypt('sidorov123', gen_salt('bf')), true, '2024-01-10 16:45:00+03', '2023-12-20 08:00:00+03', '2024-01-12 11:20:00+03'),
+('44444444-4444-4444-4444-444444444444', 'olga.fitness@proton.me', crypt('fitness2024', gen_salt('bf')), false, '2024-01-18 22:45:00+03', '2024-01-15 15:30:00+03', '2024-01-18 22:45:00+03'),
+('55555555-5555-5555-5555-555555555555', 'bodybuilder_max@iron.com', crypt('maxpower', gen_salt('bf')), false, '2024-01-17 11:20:00+03', '2023-11-01 09:00:00+03', '2024-01-17 11:20:00+03'),
+-- Дополнительные пользователи для тестирования разных сценариев
+('66666666-6666-6666-6666-666666666666', 'test.today@example.com', crypt('today123', gen_salt('bf')), false, CURRENT_TIMESTAMP, CURRENT_DATE - 5, CURRENT_TIMESTAMP),
+('77777777-7777-7777-7777-777777777777', 'test.planned@example.com', crypt('planned123', gen_salt('bf')), false, CURRENT_TIMESTAMP, CURRENT_DATE - 10, CURRENT_TIMESTAMP),
+('88888888-8888-8888-8888-888888888888', 'test.started@example.com', crypt('started123', gen_salt('bf')), false, CURRENT_TIMESTAMP, CURRENT_DATE - 7, CURRENT_TIMESTAMP),
+('99999999-9999-9999-9999-999999999999', 'test.done@example.com', crypt('done123', gen_salt('bf')), false, CURRENT_TIMESTAMP, CURRENT_DATE - 3, CURRENT_TIMESTAMP),
+('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'test.multiple@example.com', crypt('multi123', gen_salt('bf')), false, CURRENT_TIMESTAMP, CURRENT_DATE - 15, CURRENT_TIMESTAMP);
+
+-- 2. Создаем теги
+INSERT INTO tag (type) VALUES
+('Грудь'), ('Спина'), ('Ноги'), ('Плечи'), ('Бицепс'), ('Трицепс'),
+('Кардио'), ('Силовая'), ('Выносливость'), ('Гибкость'), ('Базовая'),
+('Изолированная'), ('С весом'), ('Без веса'), ('Домашняя'), ('Тренажерный зал'),
+('Разминка'), ('Заминка'), ('Пресс'), ('Ягодицы'), ('Бедра'),
+('Круговая'), ('Супперсет'), ('Дроп-сет'), ('Разминка суставов');
+
+-- 3. Создаем упражнения
+INSERT INTO exercise (description, href) VALUES
+-- Базовые упражнения
+('Жим лежа', 'https://www.youtube.com/watch?v=rT7DgCr-3pg'),
+('Приседания со штангой', 'https://www.youtube.com/watch?v=SW_C1A-rejs'),
+('Становая тяга', 'https://www.youtube.com/watch?v=1ZXobu7JvvE'),
+('Тяга штанги в наклоне', 'https://www.youtube.com/watch?v=G8l_8chR5BE'),
+('Армейский жим', 'https://www.youtube.com/watch?v=2yjwXTZQDDI'),
+-- Изолированные упражнения
+('Подъем гантелей на бицепс', 'https://www.youtube.com/watch?v=sAq_ocpRh_I'),
+('Французский жим', 'https://www.youtube.com/watch?v=_gsUck-7M74'),
+('Разведения гантелей в стороны', 'https://www.youtube.com/watch?v=3VcKaXpzqRo'),
+('Сгибания ног лежа', 'https://www.youtube.com/watch?v=1Tq3QdYUuHs'),
+('Разгибания ног сидя', 'https://www.youtube.com/watch?v=YyvSfVjQeL0'),
+-- Кардио
+('Бег на беговой дорожке', 'https://www.youtube.com/watch?v=32CM2TQ6fes'),
+('Велотренажер', 'https://www.youtube.com/watch?v=6N7dN6fUJmg'),
+('Скакалка', 'https://www.youtube.com/watch?v=1BZM2Vre5oc'),
+-- Домашние упражнения
+('Отжимания', 'https://www.youtube.com/watch?v=IODxDxX7oi4'),
+('Приседания без веса', 'https://www.youtube.com/watch?v=aclHkVaku9U'),
+('Планка', 'https://www.youtube.com/watch?v=pSHjTRCQxIw'),
+('Выпады', 'https://www.youtube.com/watch?v=QF0BQS8YQi8'),
+('Подтягивания', 'https://www.youtube.com/watch?v=eGo4IYlbE5g'),
+('Берпи', 'https://www.youtube.com/watch?v=auBLPXO8Fww'),
+-- Упражнения на гибкость
+('Наклоны вперед', 'https://www.youtube.com/watch?v=PhZPTI1wNNo'),
+('Мостик', 'https://www.youtube.com/watch?v=nziA8NCrDCI'),
+-- Тренажеры
+('Тяга верхнего блока', 'https://www.youtube.com/watch?v=CAwf7n6Luuc'),
+('Жим ногами', 'https://www.youtube.com/watch?v=IZxyjW7MPJQ'),
+('Сведение рук в бабочке', 'https://www.youtube.com/watch?v=Z57CtFmRMxA'),
+-- Дополнительные упражнения
+('Тяга гантели в наклоне', 'https://www.youtube.com/watch?v=roCP6wCXPqo'),
+('Подъем на носки стоя', 'https://www.youtube.com/watch?v=y-wV4Venusw'),
+('Махи гантелями перед собой', 'https://www.youtube.com/watch?v=-t7fuZ0KhDA'),
+('Скручивания на пресс', 'https://www.youtube.com/watch?v=1we5jnyIGE4'),
+('Боковая планка', 'https://www.youtube.com/watch?v=k3j7F4m5rEo'),
+('Гиперэкстензия', 'https://www.youtube.com/watch?v=PhZPTI1wNNo'),
+-- Дополнительные для глобальных тренировок
+('Подтягивания широким хватом', 'https://www.youtube.com/watch?v=eGo4IYlbE5g'),
+('Отжимания на брусьях', 'https://www.youtube.com/watch?v=2z8JmcrW-As'),
+('Мертвая тяга', 'https://www.youtube.com/watch?v=1zxR1Xhqo1Y'),
+('Жим гантелей лежа', 'https://www.youtube.com/watch?v=VmB1G1K7v94'),
+('Приседания с гантелями', 'https://www.youtube.com/watch?v=ca_PmUumI0E'),
+('Тяга Т-грифа', 'https://www.youtube.com/watch?v=j3Igk5nyZE4'),
+('Подъем штанги на бицепс', 'https://www.youtube.com/watch?v=kwG2ipFRgfo'),
+('Пуловер', 'https://www.youtube.com/watch?v=6yMqYJp3E6Y'),
+('Шраги', 'https://www.youtube.com/watch?v=2J3-CrR50w8'),
+('Подъем ног в висе', 'https://www.youtube.com/watch?v=JB2oyawG9KI');
+
+-- 4. Связываем упражнения с тегами
+INSERT INTO exercise_to_tag (exercise_id, tag_id)
+SELECT e.id, t.id
+FROM exercise e
+CROSS JOIN tag t
+WHERE t.type IN ('Грудь', 'Спина', 'Ноги', 'Плечи', 'Бицепс', 'Трицепс', 'Базовая', 'Изолированная')
+AND (
+    (e.description LIKE '%жим%' AND t.type IN ('Грудь', 'Плечи', 'Базовая')) OR
+    (e.description LIKE '%тяга%' AND t.type IN ('Спина', 'Базовая')) OR
+    (e.description LIKE '%присед%' AND t.type IN ('Ноги', 'Базовая')) OR
+    (e.description LIKE '%бицепс%' AND t.type = 'Бицепс') OR
+    (e.description LIKE '%трицепс%' AND t.type = 'Трицепс')
+)
+ON CONFLICT DO NOTHING;
+
+-- 5. Добавляем глобальные тренировки
+INSERT INTO global_training (level) VALUES
+('beginner'),
+('intermediate'),
+('advanced');
+
+-- 6. Добавляем упражнения в глобальные тренировки
+INSERT INTO global_training_exercise (global_training_id, exercise_id)
+SELECT gt.id, e.id
+FROM global_training gt
+CROSS JOIN exercise e
+WHERE (gt.level = 'beginner' AND e.id IN (1, 2, 3, 4, 5, 14, 15, 16, 17)) OR
+      (gt.level = 'intermediate' AND e.id IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 22, 23, 31, 32)) OR
+      (gt.level = 'advanced' AND e.id IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 24, 25, 26, 27, 28, 29, 30, 33, 34, 35, 36, 37, 38, 39, 40));
+
+-- 7. Добавляем информацию о пользователях
+INSERT INTO user_info (weight, height, date, age, user_id)
+VALUES
+-- Для пользователя test.today@example.com
+(75.5, 180, CURRENT_DATE - 30, 25, '66666666-6666-6666-6666-666666666666'),
+(76.0, 180, CURRENT_DATE - 15, 25, '66666666-6666-6666-6666-666666666666'),
+(76.5, 180, CURRENT_DATE, 25, '66666666-6666-6666-6666-666666666666'),
+-- Для пользователя test.multiple@example.com
+(65.0, 170, CURRENT_DATE - 60, 22, 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+(66.0, 170, CURRENT_DATE - 30, 22, 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+(67.0, 170, CURRENT_DATE, 22, 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+-- Для основного пользователя alex.ivanov@gmail.com
+(80.0, 185, CURRENT_DATE - 90, 30, '11111111-1111-1111-1111-111111111111'),
+(81.5, 185, CURRENT_DATE - 60, 30, '11111111-1111-1111-1111-111111111111'),
+(82.0, 185, CURRENT_DATE - 30, 30, '11111111-1111-1111-1111-111111111111'),
+-- Для основного пользователя maria.petrova@yandex.ru
+(60.0, 168, CURRENT_DATE - 90, 28, '22222222-2222-2222-2222-222222222222'),
+(61.0, 168, CURRENT_DATE - 60, 28, '22222222-2222-2222-2222-222222222222'),
+(62.0, 168, CURRENT_DATE - 30, 28, '22222222-2222-2222-2222-222222222222');
+
+-- 8. Создаем тренировки для тестирования всех сценариев
+
+-- 8.1 Тренировка на сегодня (не начата)
+INSERT INTO training (
+    user_id, is_done, planned_date, actual_date, started_at, finished_at,
+    total_duration, total_rest_time, total_exercise_time, rating
+) VALUES (
+    '66666666-6666-6666-6666-666666666666', false, CURRENT_DATE, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL
+)
+RETURNING id AS training_today_id;
+
+-- 8.2 Тренировка на сегодня (начата, но не завершена)
+INSERT INTO training (
+    user_id, is_done, planned_date, actual_date, started_at, finished_at,
+    total_duration, total_rest_time, total_exercise_time, rating
+) VALUES (
+    '88888888-8888-8888-8888-888888888888', false, CURRENT_DATE, NULL, 
+    CURRENT_TIMESTAMP - interval '30 minutes', NULL,
+    NULL, NULL, NULL, NULL
+)
+RETURNING id AS training_started_id;
+
+-- 8.3 Тренировка на сегодня (завершена)
+INSERT INTO training (
+    user_id, is_done, planned_date, actual_date, started_at, finished_at,
+    total_duration, total_rest_time, total_exercise_time, rating
+) VALUES (
+    '99999999-9999-9999-9999-999999999999', true, CURRENT_DATE, CURRENT_DATE,
+    CURRENT_TIMESTAMP - interval '2 hours', CURRENT_TIMESTAMP - interval '1 hour',
+    interval '1 hour', interval '20 minutes', interval '40 minutes', 5
+)
+RETURNING id AS training_done_id;
+
+-- 8.4 Несколько тренировок на сегодня для одного пользователя
+INSERT INTO training (
+    user_id, is_done, planned_date, actual_date, started_at, finished_at,
+    total_duration, total_rest_time, total_exercise_time, rating
+) VALUES 
+(
+    'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', false, CURRENT_DATE, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL
+),
+(
+    'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', true, CURRENT_DATE, CURRENT_DATE,
+    CURRENT_TIMESTAMP - interval '3 hours', CURRENT_TIMESTAMP - interval '2 hours',
+    interval '1 hour', interval '15 minutes', interval '45 minutes', 4
+)
+RETURNING id AS training_multiple_id;
+
+-- 8.5 Запланированные тренировки на будущее
+INSERT INTO training (
+    user_id, is_done, planned_date, actual_date, started_at, finished_at,
+    total_duration, total_rest_time, total_exercise_time, rating
+) VALUES 
+(
+    '77777777-7777-7777-7777-777777777777', false, CURRENT_DATE + 1, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL
+),
+(
+    '77777777-7777-7777-7777-777777777777', false, CURRENT_DATE + 2, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL
+),
+(
+    '77777777-7777-7777-7777-777777777777', false, CURRENT_DATE + 3, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL
+);
+
+-- 8.6 Прошлые тренировки с разными статусами для существующих пользователей
+INSERT INTO training (
+    user_id, is_done, planned_date, actual_date, started_at, finished_at,
+    total_duration, total_rest_time, total_exercise_time, rating
+) VALUES 
+(
+    '11111111-1111-1111-1111-111111111111', true, CURRENT_DATE - 7, CURRENT_DATE - 7,
+    CURRENT_TIMESTAMP - interval '7 days 2 hours', CURRENT_TIMESTAMP - interval '7 days 1 hour',
+    interval '1 hour', interval '18 minutes', interval '42 minutes', 5
+),
+(
+    '11111111-1111-1111-1111-111111111111', true, CURRENT_DATE - 5, CURRENT_DATE - 5,
+    CURRENT_TIMESTAMP - interval '5 days 3 hours', CURRENT_TIMESTAMP - interval '5 days 2 hours',
+    interval '1 hour 15 minutes', interval '25 minutes', interval '50 minutes', 4
+),
+(
+    '22222222-2222-2222-2222-222222222222', true, CURRENT_DATE - 3, CURRENT_DATE - 3,
+    CURRENT_TIMESTAMP - interval '3 days 4 hours', CURRENT_TIMESTAMP - interval '3 days 3 hours',
+    interval '45 minutes', interval '10 minutes', interval '35 minutes', 3
+),
+(
+    '22222222-2222-2222-2222-222222222222', false, CURRENT_DATE - 1, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL
+),
+(
+    '33333333-3333-3333-3333-333333333333', true, CURRENT_DATE - 10, CURRENT_DATE - 10,
+    CURRENT_TIMESTAMP - interval '10 days 3 hours', CURRENT_TIMESTAMP - interval '10 days 2 hours',
+    interval '50 minutes', interval '15 minutes', interval '35 minutes', 2
+),
+(
+    '44444444-4444-4444-4444-444444444444', true, CURRENT_DATE - 4, CURRENT_DATE - 4,
+    CURRENT_TIMESTAMP - interval '4 days 5 hours', CURRENT_TIMESTAMP - interval '4 days 4 hours',
+    interval '1 hour 10 minutes', interval '20 minutes', interval '50 minutes', 4
+),
+(
+    '55555555-5555-5555-5555-555555555555', true, CURRENT_DATE - 2, CURRENT_DATE - 2,
+    CURRENT_TIMESTAMP - interval '2 days 6 hours', CURRENT_TIMESTAMP - interval '2 days 5 hours',
+    interval '1 hour 30 minutes', interval '30 minutes', interval '1 hour', 5
+);
+
+-- 9. Создаем переменные для ID тренировок (используем временные таблицы вместо \gset)
+DO $$
+DECLARE
+    training_today_id BIGINT;
+    training_started_id BIGINT;
+    training_done_id BIGINT;
+    training_multiple_id BIGINT;
+    training_stats_id BIGINT;
+    training_update_id BIGINT;
+    training_delete_id BIGINT;
+    exercise_update_id BIGINT;
+BEGIN
+    -- Получаем ID тренировок
+    SELECT id INTO training_today_id FROM training WHERE user_id = '66666666-6666-6666-6666-666666666666' AND planned_date = CURRENT_DATE AND is_done = false ORDER BY id DESC LIMIT 1;
+    SELECT id INTO training_started_id FROM training WHERE user_id = '88888888-8888-8888-8888-888888888888' AND planned_date = CURRENT_DATE AND started_at IS NOT NULL ORDER BY id DESC LIMIT 1;
+    SELECT id INTO training_done_id FROM training WHERE user_id = '99999999-9999-9999-9999-999999999999' AND planned_date = CURRENT_DATE AND is_done = true ORDER BY id DESC LIMIT 1;
+    SELECT id INTO training_multiple_id FROM training WHERE user_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' AND planned_date = CURRENT_DATE AND is_done = true ORDER BY id DESC LIMIT 1;
+
+    -- 10. Добавляем упражнения в тренировки для тестирования
+
+    -- 10.1 В тренировку на сегодня (не начатую)
+    INSERT INTO trained_exercise (training_id, exercise_id, weight, approaches, reps, time, doing, rest, notes)
+    SELECT 
+        training_today_id,
+        e.id,
+        40.0 + floor(random() * 40)::numeric,
+        3 + floor(random() * 2)::int,
+        8 + floor(random() * 7)::int,
+        NULL,
+        interval '30 seconds',
+        interval '90 seconds',
+        'Планирую сделать'
+    FROM exercise e
+    WHERE e.description IN ('Жим лежа', 'Приседания со штангой', 'Тяга штанги в наклоне', 'Подъем гантелей на бицепс')
+    LIMIT 4;
+
+    -- 10.2 В тренировку на сегодня (начатую)
+    INSERT INTO trained_exercise (training_id, exercise_id, weight, approaches, reps, time, doing, rest, notes)
+    VALUES 
+    (
+        training_started_id,
+        (SELECT id FROM exercise WHERE description = 'Жим лежа'),
+        80.0, 4, 10, interval '4 minutes', interval '2 minutes', interval '2 minutes', 'Сделал 4 подхода'
+    ),
+    (
+        training_started_id,
+        (SELECT id FROM exercise WHERE description = 'Тяга штанги в наклоне'),
+        60.0, 3, 12, interval '3 minutes 30 seconds', interval '1 minute 45 seconds', interval '1 minute 45 seconds', 'Хорошая техника'
+    );
+
+    -- 10.3 В тренировку на сегодня (завершенную)
+    INSERT INTO trained_exercise (training_id, exercise_id, weight, approaches, reps, time, doing, rest, notes)
+    VALUES 
+    (
+        training_done_id,
+        (SELECT id FROM exercise WHERE description = 'Жим лежа'),
+        85.0, 4, 8, interval '4 minutes 30 seconds', interval '2 minutes 15 seconds', interval '2 minutes 15 seconds', 'Тяжело, но сделал'
+    ),
+    (
+        training_done_id,
+        (SELECT id FROM exercise WHERE description = 'Приседания со штангой'),
+        100.0, 3, 10, interval '3 minutes 45 seconds', interval '1 minute 50 seconds', interval '1 minute 55 seconds', 'Отличная форма'
+    ),
+    (
+        training_done_id,
+        (SELECT id FROM exercise WHERE description = 'Подъем гантелей на бицепс'),
+        18.0, 3, 12, interval '3 minutes', interval '1 minute 30 seconds', interval '1 minute 30 seconds', 'Легко'
+    );
+
+    -- 10.4 Добавляем упражнения с разными типами времени для тестирования
+    INSERT INTO trained_exercise (training_id, exercise_id, weight, approaches, reps, time, doing, rest, notes)
+    SELECT 
+        t.id,
+        e.id,
+        CASE WHEN e.description LIKE '%гантел%' THEN 15.0 ELSE 50.0 END,
+        3,
+        10,
+        interval '3 minutes',
+        interval '1 minute 30 seconds',
+        interval '1 minute 30 seconds',
+        'Тестовое упражнение'
+    FROM training t
+    CROSS JOIN exercise e
+    WHERE t.user_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
+    AND t.planned_date = CURRENT_DATE
+    AND t.is_done = true
+    AND e.description IN ('Бег на беговой дорожке', 'Планка', 'Отжимания')
+    LIMIT 3;
+
+    -- 11. Обновляем время тренировок на основе добавленных упражнений
+    WITH time_calc AS (
+        SELECT 
+            te.training_id,
+            SUM(EXTRACT(EPOCH FROM te.doing)) as total_exercise_sec,
+            SUM(EXTRACT(EPOCH FROM te.rest)) as total_rest_sec
+        FROM trained_exercise te
+        WHERE te.training_id IN (training_started_id, training_done_id)
+        GROUP BY te.training_id
+    )
+    UPDATE training t
+    SET 
+        total_duration = make_interval(secs => tc.total_exercise_sec + tc.total_rest_sec),
+        total_rest_time = make_interval(secs => tc.total_rest_sec),
+        total_exercise_time = make_interval(secs => tc.total_exercise_sec)
+    FROM time_calc tc
+    WHERE t.id = tc.training_id;
+
+    -- 12. Добавляем рекомендации для тренировок
+    INSERT INTO recommendation (training_id, approach, weight, time, reason)
+    VALUES 
+    (
+        training_done_id,
+        1,
+        5.0,
+        interval '30 seconds',
+        'Увеличить время отдыха между подходами'
+    ),
+    (
+        training_done_id,
+        NULL,
+        NULL,
+        interval '10 seconds',
+        'Улучшить технику выполнения'
+    ),
+    (
+        training_started_id,
+        2,
+        2.5,
+        interval '45 seconds',
+        'Добавить еще один подход'
+    );
+
+    -- 13. Создаем тренировку с большим количеством упражнений для тестирования статистики
+    INSERT INTO training (
+        user_id, is_done, planned_date, actual_date, started_at, finished_at,
+        total_duration, total_rest_time, total_exercise_time, rating
+    ) VALUES (
+        '11111111-1111-1111-1111-111111111111', true, CURRENT_DATE - 2, CURRENT_DATE - 2,
+        CURRENT_TIMESTAMP - interval '2 days 5 hours', CURRENT_TIMESTAMP - interval '2 days 4 hours',
+        interval '1 hour 30 minutes', interval '30 minutes', interval '1 hour', 5
+    )
+    RETURNING id INTO training_stats_id;
+
+    -- 14. Добавляем много упражнений в эту тренировку
+    INSERT INTO trained_exercise (training_id, exercise_id, weight, approaches, reps, time, doing, rest, notes)
+    SELECT 
+        training_stats_id,
+        e.id,
+        CASE 
+            WHEN e.description LIKE '%штан%' THEN 70.0 + (row_number() over()) * 5
+            WHEN e.description LIKE '%гантел%' THEN 15.0 + (row_number() over()) * 2
+            ELSE NULL
+        END,
+        4,
+        10 + (row_number() over()),
+        interval '4 minutes',
+        interval '2 minutes',
+        interval '2 minutes',
+        'Упражнение ' || row_number() over()
+    FROM exercise e
+    WHERE e.description IN ('Жим лежа', 'Тяга штанги в наклоне', 'Подъем гантелей на бицепс', 'Французский жим', 'Разведения гантелей в стороны', 'Сгибания ног лежа', 'Разгибания ног сидя')
+    LIMIT 7;
+
+    -- 15. Создаем тренировку для тестирования операций обновления
+    INSERT INTO training (
+        user_id, is_done, planned_date, actual_date, started_at, finished_at,
+        total_duration, total_rest_time, total_exercise_time, rating
+    ) VALUES (
+        '44444444-4444-4444-4444-444444444444', false, CURRENT_DATE, NULL, NULL, NULL,
+        NULL, NULL, NULL, NULL
+    )
+    RETURNING id INTO training_update_id;
+
+    -- 16. Добавляем упражнение для тестирования обновления
+    INSERT INTO trained_exercise (training_id, exercise_id, weight, approaches, reps, time, doing, rest, notes)
+    VALUES (
+        training_update_id,
+        (SELECT id FROM exercise WHERE description = 'Жим лежа'),
+        70.0, 3, 10, interval '3 minutes', interval '1 minute 30 seconds', interval '1 minute 30 seconds', 'Начальный вариант'
+    )
+    RETURNING id INTO exercise_update_id;
+
+    -- 17. Создаем тренировку для тестирования удаления
+    INSERT INTO training (
+        user_id, is_done, planned_date, actual_date, started_at, finished_at,
+        total_duration, total_rest_time, total_exercise_time, rating
+    ) VALUES (
+        '55555555-5555-5555-5555-555555555555', false, CURRENT_DATE, NULL, NULL, NULL,
+        NULL, NULL, NULL, NULL
+    )
+    RETURNING id INTO training_delete_id;
+
+    -- 18. Добавляем несколько упражнений для тестирования удаления
+    INSERT INTO trained_exercise (training_id, exercise_id, weight, approaches, reps, time, doing, rest, notes)
+    SELECT 
+        training_delete_id,
+        e.id,
+        50.0, 3, 10, interval '3 minutes', interval '1 minute 30 seconds', interval '1 minute 30 seconds', 'Для удаления'
+    FROM exercise e
+    WHERE e.description IN ('Жим лежа', 'Приседания со штангой', 'Тяга штанги в наклоне')
+    LIMIT 3;
+
+    -- 19. Обновляем статистику для всех тренировок с упражнениями
+    WITH stats AS (
+        SELECT 
+            te.training_id,
+            COUNT(te.id) as exercise_count,
+            COALESCE(SUM(EXTRACT(EPOCH FROM te.doing)), 0) as total_exercise_sec,
+            COALESCE(SUM(EXTRACT(EPOCH FROM te.rest)), 0) as total_rest_sec,
+            COALESCE(SUM(te.approaches), 0) as total_approaches,
+            COALESCE(SUM(te.reps), 0) as total_reps
+        FROM trained_exercise te
+        GROUP BY te.training_id
+    )
+    UPDATE training t
+    SET 
+        total_duration = make_interval(secs => s.total_exercise_sec + s.total_rest_sec),
+        total_rest_time = make_interval(secs => s.total_rest_sec),
+        total_exercise_time = make_interval(secs => s.total_exercise_sec)
+    FROM stats s
+    WHERE t.id = s.training_id
+    AND (t.total_duration IS NULL OR t.total_rest_time IS NULL OR t.total_exercise_time IS NULL);
+
+END $$;
+
+-- 20. Добавляем дополнительные связи упражнений с тегами для полноты
+INSERT INTO exercise_to_tag (exercise_id, tag_id)
+SELECT DISTINCT e.id, t.id
+FROM exercise e
+CROSS JOIN tag t
+WHERE t.type IN ('Разминка', 'Заминка', 'Пресс', 'Кардио', 'Выносливость', 'Гибкость')
+AND (
+    (e.description LIKE '%бег%' AND t.type IN ('Кардио', 'Выносливость')) OR
+    (e.description LIKE '%планк%' AND t.type IN ('Пресс', 'Без веса', 'Домашняя')) OR
+    (e.description LIKE '%наклоны%' AND t.type IN ('Гибкость', 'Заминка')) OR
+    (e.description LIKE '%мостик%' AND t.type IN ('Гибкость', 'Заминка'))
+)
+ON CONFLICT DO NOTHING;
+
+-- 21. Создаем дополнительные тренировки для полноты тестовых данных
+INSERT INTO training (
+    user_id, is_done, planned_date, actual_date, started_at, finished_at,
+    total_duration, total_rest_time, total_exercise_time, rating
+)
+SELECT 
+    u.id,
+    CASE WHEN random() > 0.3 THEN true ELSE false END,
+    date_trunc('day', CURRENT_DATE - (n || ' days')::interval)::date,
+    CASE WHEN random() > 0.3 THEN date_trunc('day', CURRENT_DATE - (n || ' days')::interval)::date ELSE NULL END,
+    CASE WHEN random() > 0.3 THEN CURRENT_TIMESTAMP - (n || ' days 2 hours')::interval ELSE NULL END,
+    CASE WHEN random() > 0.3 THEN CURRENT_TIMESTAMP - (n || ' days 1 hour')::interval ELSE NULL END,
+    CASE WHEN random() > 0.3 THEN interval '1 hour' ELSE NULL END,
+    CASE WHEN random() > 0.3 THEN interval '20 minutes' ELSE NULL END,
+    CASE WHEN random() > 0.3 THEN interval '40 minutes' ELSE NULL END,
+    CASE WHEN random() > 0.7 THEN 3 + floor(random() * 3)::int ELSE NULL END
+FROM users u
+CROSS JOIN generate_series(1, 10) n
+WHERE u.email NOT LIKE '%@test.com'
+AND u.id IN ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222')
+ORDER BY random()
+LIMIT 10;
+
+-- 22. Добавляем упражнения в эти тренировки
+INSERT INTO trained_exercise (training_id, exercise_id, weight, approaches, reps, time, doing, rest, notes)
+SELECT 
+    t.id,
+    e.id,
+    CASE WHEN random() > 0.5 THEN 20.0 + random() * 50 ELSE NULL END,
+    3 + floor(random() * 3)::int,
+    8 + floor(random() * 8)::int,
+    CASE WHEN random() > 0.5 THEN interval '3 minutes' ELSE NULL END,
+    CASE WHEN random() > 0.5 THEN interval '1 minute 30 seconds' ELSE NULL END,
+    CASE WHEN random() > 0.5 THEN interval '1 minute 30 seconds' ELSE NULL END,
+    CASE WHEN random() > 0.7 THEN 'Тестовые заметки' ELSE NULL END
+FROM training t
+CROSS JOIN exercise e
+WHERE t.user_id IN ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222')
+AND t.id NOT IN (SELECT training_id FROM trained_exercise)
+AND e.id IN (1, 2, 3, 4, 5, 6, 7)
+ORDER BY random()
+LIMIT 20;
+
+-- Выводим информацию о созданных данных
+SELECT 'Тестовые данные успешно созданы!' as message;
+SELECT COUNT(*) as user_count FROM users;
+SELECT COUNT(*) as exercise_count FROM exercise;
+SELECT COUNT(*) as tag_count FROM tag;
+SELECT COUNT(*) as training_count FROM training;
+SELECT COUNT(*) as trained_exercise_count FROM trained_exercise;
+SELECT COUNT(*) as recommendation_count FROM recommendation;
+SELECT COUNT(*) as user_info_count FROM user_info;

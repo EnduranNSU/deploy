@@ -19,16 +19,18 @@ type TrainingService interface {
 	RemoveExerciseFromTraining(ctx context.Context, trainingID, exerciseID int64) error
 	GetUserTrainingStats(ctx context.Context, userID uuid.UUID) (*TrainingStats, error)
 	CompleteTraining(ctx context.Context, trainingID int64, rating *int32) (*Training, error)
-    AssignGlobalTraining(ctx context.Context, cmd AssignGlobalTrainingCmd) (*Training, error)
 
 	UpdateExerciseTime(ctx context.Context, exerciseID int64, weight *decimal.Decimal, approaches *int32, reps *int32, time *time.Duration, doing *time.Duration, rest *time.Duration) (*TrainedExercise, error)
 	UpdateTrainingTimers(ctx context.Context, trainingID int64, totalDuration *time.Duration, totalRestTime *time.Duration, totalExerciseTime *time.Duration) (*Training, error)
 	CalculateTrainingTotalTime(ctx context.Context, trainingID int64) (*TrainingTime, error)
 	GetCurrentTraining(ctx context.Context, userID uuid.UUID) (*Training, error)
 	GetTodaysTraining(ctx context.Context, userID uuid.UUID) ([]*Training, error)
+
 	GetGlobalTrainings(ctx context.Context) ([]*GlobalTraining, error)
-	GetGlobalTrainingByLevel(ctx context.Context, level string) (*GlobalTraining, error)
-	GetGlobalTrainingWithTags(ctx context.Context, level string) (*GlobalTraining, error)
+	GetGlobalTrainingByLevel(ctx context.Context, level string) ([]*GlobalTraining, error)
+	GetGlobalTrainingById(ctx context.Context, trainingID int64) (*GlobalTraining, error)
+	AssignGlobalTraining(ctx context.Context, cmd AssignGlobalTrainingCmd) (*Training, error)
+
 	MarkTrainingAsDone(ctx context.Context, trainingID int64, userID uuid.UUID) (*Training, error)
 	GetTrainingStats(ctx context.Context, trainingID int64) (*TrainingStats, error)
 	StartTraining(ctx context.Context, trainingID int64, userID uuid.UUID) (*Training, error)

@@ -75,8 +75,8 @@ func NewGinRouter(training *TrainingHandler, exercise *ExerciseHandler) *gin.Eng
 			globalTrainings.POST("/assign", training.AssignGlobalTraining)
 			
 			// Операции с глобальной тренировкой по уровню
-			globalTrainings.GET("/:level", training.GetGlobalTrainingByLevel)
-			globalTrainings.GET("/:level/with-tags", training.GetGlobalTrainingWithTags)
+			globalTrainings.GET("/level/:level", training.GetGlobalTrainingByLevel)
+			globalTrainings.GET("/:id", training.GetGlobalTrainingById)
 		}
 
 		// Exercise routes

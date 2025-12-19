@@ -953,7 +953,7 @@ func (h *TrainingHandler) GetTodaysTraining(c *gin.Context) {
 // @Description  Возвращает список всех глобальных тренировок
 // @Tags         global-trainings
 // @Produce      json
-// @Success      200  {array}   dto.GlobalTrainingResponse
+// @Success      200  {array}   dto.GlobalTrainingWithTagsResponse
 // @Failure      500  {object}  dto.ErrorResponse
 // @Router       /global-trainings [get]
 func (h *TrainingHandler) GetGlobalTrainings(c *gin.Context) {
@@ -964,13 +964,13 @@ func (h *TrainingHandler) GetGlobalTrainings(c *gin.Context) {
 	}
 
 	if len(globalTrainings) == 0 {
-		c.JSON(http.StatusOK, []dto.GlobalTrainingResponse{})
+		c.JSON(http.StatusOK, []dto.GlobalTrainingWithTagsResponse{})
 		return
 	}
 
-	resp := make([]dto.GlobalTrainingResponse, 0, len(globalTrainings))
+	resp := make([]dto.GlobalTrainingWithTagsResponse, 0, len(globalTrainings))
 	for _, gt := range globalTrainings {
-		resp = append(resp, h.globalTrainingToResponse(gt))
+		resp = append(resp, h.globalTrainingWithTagsToResponse(gt))
 	}
 
 	c.JSON(http.StatusOK, resp)
@@ -982,11 +982,11 @@ func (h *TrainingHandler) GetGlobalTrainings(c *gin.Context) {
 // @Tags         global-trainings
 // @Produce      json
 // @Param        level path string true "Уровень тренировки"
-// @Success      200  {object}  dto.GlobalTrainingResponse
+// @Success      200  {object}  dto.GlobalTrainingWithTagsResponse
 // @Failure      400  {object}  dto.ErrorResponse
 // @Failure      404  {object}  dto.ErrorResponse
 // @Failure      500  {object}  dto.ErrorResponse
-// @Router       /global-trainings/{level} [get]
+// @Router       /global-trainings/level/{level} [get]
 func (h *TrainingHandler) GetGlobalTrainingByLevel(c *gin.Context) {
 	level := c.Param("level")
 	if level == "" {
@@ -994,34 +994,40 @@ func (h *TrainingHandler) GetGlobalTrainingByLevel(c *gin.Context) {
 		return
 	}
 
-	globalTraining, err := h.svc.GetGlobalTrainingByLevel(c.Request.Context(), level)
+	globalTrainings, err := h.svc.GetGlobalTrainingByLevel(c.Request.Context(), level)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, dto.ErrorResponse{Error: "global training not found"})
 		return
 	}
 
-	c.JSON(http.StatusOK, h.globalTrainingToResponse(globalTraining))
+	resp := make([]dto.GlobalTrainingWithTagsResponse, 0, len(globalTrainings))
+	for _, gt := range globalTrainings {
+		resp = append(resp, h.globalTrainingWithTagsToResponse(gt))
+	}
+
+
+	c.JSON(http.StatusOK, resp)
 }
 
-// GetGlobalTrainingWithTags получает глобальную тренировку с тегами
-// @Summary      Получить глобальную тренировку с тегами
+// GetGlobalTrainingById получает глобальную тренировку по id
+// @Summary      Получить глобальную тренировку по id
 // @Description  Возвращает глобальную тренировку с упражнениями и их тегами
 // @Tags         global-trainings
 // @Produce      json
-// @Param        level path string true "Уровень тренировки"
+// @Param        id path int64 true "Training ID"
 // @Success      200  {object}  dto.GlobalTrainingWithTagsResponse
 // @Failure      400  {object}  dto.ErrorResponse
 // @Failure      404  {object}  dto.ErrorResponse
 // @Failure      500  {object}  dto.ErrorResponse
-// @Router       /global-trainings/{level}/with-tags [get]
-func (h *TrainingHandler) GetGlobalTrainingWithTags(c *gin.Context) {
-	level := c.Param("level")
-	if level == "" {
-		c.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{Error: "level is required"})
+// @Router       /global-trainings/{id} [get]
+func (h *TrainingHandler) GetGlobalTrainingById(c *gin.Context) {
+	trainingID, err := parseInt64Param(c, "id")
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid training id"})
 		return
 	}
 
-	globalTraining, err := h.svc.GetGlobalTrainingWithTags(c.Request.Context(), level)
+	globalTraining, err := h.svc.GetGlobalTrainingById(c.Request.Context(), trainingID)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, dto.ErrorResponse{Error: "global training not found"})
 		return
@@ -1334,28 +1340,6 @@ func (h *TrainingHandler) AssignGlobalTraining(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, h.trainingToResponse(training))
-}
-
-// Вспомогательные методы преобразования
-
-func (h *TrainingHandler) globalTrainingToResponse(gt *svctraining.GlobalTraining) dto.GlobalTrainingResponse {
-	var exercises []dto.ExerciseResponse
-	if gt.Exercises != nil {
-		exercises = make([]dto.ExerciseResponse, 0, len(gt.Exercises))
-		for _, exercise := range gt.Exercises {
-			exercises = append(exercises, dto.ExerciseResponse{
-				ID:          exercise.ID,
-				Description: exercise.Description,
-				VideoURL:    &exercise.Href,
-			})
-		}
-	}
-
-	return dto.GlobalTrainingResponse{
-		ID:          gt.ID,
-		Level:       gt.Level,
-		Exercises:   exercises,
-	}
 }
 
 func (h *TrainingHandler) globalTrainingWithTagsToResponse(gt *svctraining.GlobalTraining) dto.GlobalTrainingWithTagsResponse {

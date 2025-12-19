@@ -122,8 +122,6 @@ type TrainingTimeResponse struct {
 // GlobalTrainingResponse представляет ответ с информацией о глобальной тренировке
 type GlobalTrainingResponse struct {
 	ID          int64              `json:"id" example:"1" description:"ID глобальной тренировки"`
-	Name        string             `json:"name" example:"Тренировка для начинающих" description:"Название тренировки"`
-	Description string             `json:"description" example:"Базовая тренировка для новичков" description:"Описание тренировки"`
 	Level       string             `json:"level" example:"beginner" description:"Уровень сложности"`
 	Exercises   []ExerciseResponse `json:"exercises" description:"Упражнения в тренировке"`
 }
@@ -131,8 +129,6 @@ type GlobalTrainingResponse struct {
 // GlobalTrainingWithTagsResponse представляет ответ с информацией о глобальной тренировке с тегами
 type GlobalTrainingWithTagsResponse struct {
 	ID          int64                         `json:"id" example:"1" description:"ID глобальной тренировки"`
-	Name        string                        `json:"name" example:"Тренировка для начинающих" description:"Название тренировки"`
-	Description string                        `json:"description" example:"Базовая тренировка для новичков" description:"Описание тренировки"`
 	Level       string                        `json:"level" example:"beginner" description:"Уровень сложности"`
 	Exercises   []ExerciseWithTagsResponse `json:"exercises" description:"Упражнения в тренировке с тегами"`
 }

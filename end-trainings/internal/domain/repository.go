@@ -33,8 +33,8 @@ type TrainingRepository interface {
 	
 	// Популярные/известные
 	GetGlobalTrainings(ctx context.Context) ([]*GlobalTraining, error)
-	GetGlobalTrainingByLevel(ctx context.Context, level string) (*GlobalTraining, error)
-	GetGlobalTrainingWithTags(ctx context.Context, level string) (*GlobalTraining, error)
+	GetGlobalTrainingByLevel(ctx context.Context, level string) ([]*GlobalTraining, error)
+	GetGlobalTrainingById(ctx context.Context, trainingID int64) (*GlobalTraining, error)
 	
 	//Прогресс тренировки
 	MarkTrainingAsDone(ctx context.Context, trainingID int64, userID uuid.UUID) (*Training, error)

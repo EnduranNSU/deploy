@@ -2,60 +2,90 @@ package postgres
 
 import (
 	"database/sql"
-	"time"
+	"encoding/json"
+
+	"github.com/EnduranNSU/trainings/internal/domain"
 )
 
-func nullTimeFromSQL(st sql.NullTime) *time.Time {
-	if !st.Valid {
-		return nil
+func toDomainTags(genTags interface{}) []domain.Tag {
+	var tags []domain.Tag = nil
+	var jsonBytes []byte
+
+	switch v := genTags.(type) {
+	case []byte:
+		jsonBytes = v
+	case string:
+		jsonBytes = []byte(v)
+	case json.RawMessage:
+		jsonBytes = []byte(v)
+	case sql.NullString:
+		if v.Valid {
+			jsonBytes = []byte(v.String)
+		}
+	default:
+		if b, err := json.Marshal(v); err == nil {
+			jsonBytes = b
+		}
 	}
-	return &st.Time
+
+	if len(jsonBytes) > 0 && string(jsonBytes) != "[]" && string(jsonBytes) != "null" {
+		var rawTags []struct {
+			ID   int64  `json:"id"`
+			Type string `json:"type"`
+		}
+		if err := json.Unmarshal(jsonBytes, &rawTags); err == nil {
+			tags = make([]domain.Tag, len(rawTags))
+			for i, tag := range rawTags {
+				tags[i] = domain.Tag{
+					ID:   tag.ID,
+					Type: tag.Type,
+				}
+			}
+		}
+	}
+	return tags
 }
 
-func nullIntFromSQL(si sql.NullInt64) *int64 {
-	if !si.Valid {
-		return nil
-	}
-	return &si.Int64
-}
 
-func nullIntFromSQL32(si sql.NullInt32) *int32 {
-	if !si.Valid {
-		return nil
-	}
-	return &si.Int32
-}
+func toDomainExercise(genExercises interface{}) []domain.Exercise {
+	var tags []domain.Exercise = nil
+	var jsonBytes []byte
 
-func nullFloatFromSQL(sf sql.NullFloat64) *float64 {
-	if !sf.Valid {
-		return nil
+	switch v := genExercises.(type) {
+	case []byte:
+		jsonBytes = v
+	case string:
+		jsonBytes = []byte(v)
+	case json.RawMessage:
+		jsonBytes = []byte(v)
+	case sql.NullString:
+		if v.Valid {
+			jsonBytes = []byte(v.String)
+		}
+	default:
+		if b, err := json.Marshal(v); err == nil {
+			jsonBytes = b
+		}
 	}
-	return &sf.Float64
-}
 
-func nullStringFromSQL(ss sql.NullString) *string {
-	if !ss.Valid {
-		return nil
+	if len(jsonBytes) > 0 && string(jsonBytes) != "[]" && string(jsonBytes) != "null" {
+		var rawExercises []struct {
+			ID   int64  `json:"id"`
+			Description string `json:"description"`
+			Href string `json:"href"`
+			Tags interface{} `json:"tags"`
+		}
+		if err := json.Unmarshal(jsonBytes, &rawExercises); err == nil {
+			tags = make([]domain.Exercise, len(rawExercises))
+			for i, ex := range rawExercises {
+				tags[i] = domain.Exercise{
+					ID:   ex.ID,
+					Description: ex.Description,
+					Href: ex.Href,
+					Tags: toDomainTags(ex.Tags),
+				}
+			}
+		}
 	}
-	return &ss.String
-}
-
-
-func durationToNullInt64(d *time.Duration) sql.NullInt64 {
-	if d == nil {
-		return sql.NullInt64{Valid: false}
-	}
-	microseconds := d.Microseconds()
-	return sql.NullInt64{
-		Int64: microseconds,
-		Valid: true,
-	}
-}
-
-func sqlNullInt64ToDuration(n sql.NullInt64) *time.Duration {
-    if !n.Valid {
-        return nil
-    }
-    duration := time.Duration(n.Int64) * time.Microsecond
-    return &duration
+	return tags
 }

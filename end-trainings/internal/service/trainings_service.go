@@ -302,30 +302,18 @@ func (s *trainingService) GetGlobalTrainings(ctx context.Context) ([]*domain.Glo
 	return s.repo.GetGlobalTrainings(ctx)
 }
 
-func (s *trainingService) GetGlobalTrainingByLevel(ctx context.Context, level string) (*domain.GlobalTraining, error) {
+func (s *trainingService) GetGlobalTrainingByLevel(ctx context.Context, level string) ([]*domain.GlobalTraining, error) {
 	if level == "" {
 		return nil, errors.New("level is required")
 	}
-
 	return s.repo.GetGlobalTrainingByLevel(ctx, level)
 }
 
-func (s *trainingService) GetGlobalTrainingWithTags(ctx context.Context, level string) (*domain.GlobalTraining, error) {
-	if level == "" {
-		return nil, errors.New("level is required")
-	}
-
-	// Получаем глобальную тренировку с тегами
-	globalTraining, err := s.repo.GetGlobalTrainingWithTags(ctx, level)
+func (s *trainingService) GetGlobalTrainingById(ctx context.Context, trainingID int64) (*domain.GlobalTraining, error) {
+	globalTraining, err := s.repo.GetGlobalTrainingById(ctx, trainingID)
 	if err != nil {
 		return nil, err
 	}
-
-	// Можно добавить дополнительную логику, например:
-	// 1. Валидацию наличия упражнений
-	// 2. Проверку доступности ресурсов
-	// 3. Логирование запросов
-
 	return globalTraining, nil
 }
 

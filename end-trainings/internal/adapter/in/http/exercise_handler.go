@@ -103,10 +103,8 @@ func (h *ExerciseHandler) GetExercisesByTag(c *gin.Context) {
 // @Description  Возвращает список упражнений, соответствующих поисковому запросу и фильтрам
 // @Tags         exercises
 // @Produce      json
-// @Param        query query string true "Поисковый запрос"
+// @Param        query query string true "Поисковый запрос - ищет по описанию"
 // @Param        tag_id query int64 false "ID тега для фильтрации"
-// @Param        limit query int false "Лимит результатов"
-// @Param        offset query int false "Смещение для пагинации"
 // @Success      200  {array}   dto.ExerciseResponse
 // @Failure      400  {object}  dto.ErrorResponse
 // @Failure      500  {object}  dto.ErrorResponse
@@ -192,13 +190,13 @@ func (h *ExerciseHandler) GetTagByID(c *gin.Context) {
 // @Description  Возвращает список тегов, связанных с указанным упражнением
 // @Tags         exercises
 // @Produce      json
-// @Param        exercise_id path int64 true "Exercise ID"
+// @Param        id path int64 true "Exercise ID"
 // @Success      200  {array}   dto.TagResponse
 // @Failure      400  {object}  dto.ErrorResponse
 // @Failure      500  {object}  dto.ErrorResponse
-// @Router       /exercises/{exercise_id}/tags [get]
+// @Router       /exercises/{id}/tags [get]
 func (h *ExerciseHandler) GetExerciseTags(c *gin.Context) {
-	exerciseID, err := parseInt64Param(c, "exercise_id")
+	exerciseID, err := parseInt64Param(c, "id")  // Используем "exercise_id"
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid exercise id"})
 		return
