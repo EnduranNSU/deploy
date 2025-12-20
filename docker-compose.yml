@@ -1,28 +1,6 @@
-version: '3.8'
-
 services:
-  kong:
-    image: kong:3.4
-    environment:
-      KONG_DATABASE: "off"
-      KONG_DECLARATIVE_CONFIG: /etc/kong/kong.yml
-      KONG_PROXY_LISTEN: 0.0.0.0:8000
-      KONG_ADMIN_LISTEN: 0.0.0.0:8001
-      KONG_PROXY_ACCESS_LOG: /dev/stdout
-      KONG_ADMIN_ACCESS_LOG: /dev/stdout
-      KONG_PROXY_ERROR_LOG: /dev/stderr
-      KONG_ADMIN_ERROR_LOG: /dev/stderr
-    ports:
-      - "8000:8000"
-      - "8001:8001"
-    volumes:
-      - ./kong.yml:/etc/kong/kong.yml
-    networks:
-      - enduran
-
   postgres:
     image: postgres:15-alpine
-    container_name: postgres_db
     environment:
       POSTGRES_DB: myapp
       POSTGRES_USER: postgres
@@ -50,7 +28,6 @@ services:
       - "8081:8080"
     networks:
       - enduran
-    restart: on-failure
     depends_on:
       postgres:
         condition: service_healthy
@@ -65,7 +42,6 @@ services:
       - "8080:8080"
     networks:
       - enduran
-    restart: on-failure
     depends_on:
       postgres:
         condition: service_healthy
@@ -77,11 +53,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    restart: on-failure
     networks:
       - enduran
     volumes:
-      - ./end-auth/config/config.yaml:/app/config/config.yaml:ro
+      - ./end-auth/config/config.yaml:/app/config/config.yaml
     ports:
       - "8082:8082"
 

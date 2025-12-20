@@ -85,7 +85,6 @@ func NewGinRouter(training *TrainingHandler, exercise *ExerciseHandler) *gin.Eng
 			exercises.GET("", exercise.GetAllExercises)
 			exercises.GET("/search", exercise.SearchExercises)
 			exercises.POST("/by-tags", exercise.GetExercisesByMultipleTags)
-			exercises.GET("/tag/:tag_id", exercise.GetExercisesByTag)
 			exercises.GET("/:id/tags", exercise.GetExerciseTags)
 			exercises.GET("/:id", exercise.GetExerciseByID)
 		}
@@ -94,8 +93,6 @@ func NewGinRouter(training *TrainingHandler, exercise *ExerciseHandler) *gin.Eng
 		tags := api.Group("/tags")
 		{
 			tags.GET("", exercise.GetAllTags)
-			tags.GET("/popular", exercise.GetPopularTags)
-			tags.GET("/:id", exercise.GetTagByID)
 		}
 	}
 

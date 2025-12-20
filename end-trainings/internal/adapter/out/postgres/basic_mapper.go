@@ -52,10 +52,7 @@ func durationToNullInt64(d *time.Duration) sql.NullInt64 {
 	}
 }
 
-func sqlNullInt64ToDuration(n sql.NullInt64) *time.Duration {
-    if !n.Valid {
-        return nil
-    }
-    duration := time.Duration(n.Int64) * time.Microsecond
+func toDuration(n int64) *time.Duration {
+    duration := time.Duration(n) * time.Microsecond
     return &duration
 }

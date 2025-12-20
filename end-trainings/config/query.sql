@@ -60,26 +60,10 @@ SELECT
     t.actual_date,
     t.started_at,
     t.finished_at,
-    t.total_duration,
-    t.total_rest_time,
-    t.total_exercise_time,
-    t.rating,
-    COALESCE(
-        json_agg(
-            json_build_object(
-                'id', te.id,
-                'exercise_id', te.exercise_id,
-                'weight', te.weight,
-                'approaches', te.approaches,
-                'reps', te.reps,
-                'time', te.time,
-                'doing', te.doing,
-                'rest', te.rest,
-                'notes', te.notes
-            )
-        ) FILTER (WHERE te.id IS NOT NULL),
-        '[]'
-    ) as exercises
+    CAST(COALESCE(EXTRACT(EPOCH FROM t.total_duration)::bigint, 0) as bigint) as total_duration,
+    CAST(COALESCE(EXTRACT(EPOCH FROM t.total_rest_time)::bigint, 0)as bigint) as total_rest_time,
+    CAST(COALESCE(EXTRACT(EPOCH FROM t.total_exercise_time)::bigint, 0)as bigint) as total_exercise_time,
+    t.rating
 FROM training t
 LEFT JOIN trained_exercise te ON t.id = te.training_id
 WHERE t.user_id = $1
@@ -101,7 +85,18 @@ INSERT INTO training (
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
 )
-RETURNING *;
+RETURNING 
+    id,
+    user_id,
+    is_done,
+    planned_date,
+    actual_date,
+    started_at,
+    finished_at,
+    CAST(COALESCE(EXTRACT(EPOCH FROM total_duration)::bigint, 0) as bigint) as total_duration,
+    CAST(COALESCE(EXTRACT(EPOCH FROM total_rest_time)::bigint, 0)as bigint) as total_rest_time,
+    CAST(COALESCE(EXTRACT(EPOCH FROM total_exercise_time)::bigint, 0)as bigint) as total_exercise_time,
+    rating;
 
 -- name: AddExerciseToTraining :one
 INSERT INTO trained_exercise (
@@ -117,7 +112,17 @@ INSERT INTO trained_exercise (
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9
 )
-RETURNING *;
+RETURNING 
+    id,
+    training_id,
+    exercise_id,
+    weight,
+    approaches,
+    reps,
+    CAST(COALESCE(EXTRACT(EPOCH FROM time)::bigint, 0) as bigint) as time,
+    CAST(COALESCE(EXTRACT(EPOCH FROM doing)::bigint, 0)as bigint) as doing,
+    CAST(COALESCE(EXTRACT(EPOCH FROM rest)::bigint, 0)as bigint) as rest,
+    notes;
 
 -- name: UpdateTrainedExercise :one
 UPDATE trained_exercise
@@ -130,7 +135,17 @@ SET
     rest = COALESCE($6, rest),
     notes = COALESCE($7, notes)
 WHERE id = $8
-RETURNING *;
+RETURNING 
+    id,
+    training_id,
+    exercise_id,
+    weight,
+    approaches,
+    reps,
+    CAST(COALESCE(EXTRACT(EPOCH FROM time)::bigint, 0) as bigint) as time,
+    CAST(COALESCE(EXTRACT(EPOCH FROM doing)::bigint, 0)as bigint) as doing,
+    CAST(COALESCE(EXTRACT(EPOCH FROM rest)::bigint, 0)as bigint) as rest,
+    notes;
 
 -- name: UpdateTraining :one
 UPDATE training
@@ -145,11 +160,32 @@ SET
     total_exercise_time = COALESCE($8, total_exercise_time),
     rating = COALESCE($9, rating)
 WHERE id = $10
-RETURNING *;
+RETURNING 
+    id,
+    user_id,
+    is_done,
+    planned_date,
+    actual_date,
+    started_at,
+    finished_at,
+    CAST(COALESCE(EXTRACT(EPOCH FROM total_duration)::bigint, 0) as bigint) as total_duration,
+    CAST(COALESCE(EXTRACT(EPOCH FROM total_rest_time)::bigint, 0)as bigint) as total_rest_time,
+    CAST(COALESCE(EXTRACT(EPOCH FROM total_exercise_time)::bigint, 0)as bigint) as total_exercise_time,
+    rating;
 
 -- name: GetTrainingWithExercises :one
 SELECT 
-    t.*,
+    t.id,
+    t.user_id,
+    t.is_done,
+    t.planned_date,
+    t.actual_date,
+    t.started_at,
+    t.finished_at,
+    CAST(COALESCE(EXTRACT(EPOCH FROM t.total_duration)::bigint, 0) as bigint) as total_duration,
+    CAST(COALESCE(EXTRACT(EPOCH FROM t.total_rest_time)::bigint, 0)as bigint) as total_rest_time,
+    CAST(COALESCE(EXTRACT(EPOCH FROM t.total_exercise_time)::bigint, 0)as bigint) as total_exercise_time,
+    t.rating,
     COALESCE(
         json_agg(
             json_build_object(
@@ -158,9 +194,9 @@ SELECT
                 'weight', te.weight,
                 'approaches', te.approaches,
                 'reps', te.reps,
-                'time', te.time,
-                'doing', te.doing,
-                'rest', te.rest,
+                'time', CAST(COALESCE(EXTRACT(EPOCH FROM te.time)::bigint, 0) as bigint),
+                'doing', CAST(COALESCE(EXTRACT(EPOCH FROM te.doing)::bigint, 0) as bigint),
+                'rest', CAST(COALESCE(EXTRACT(EPOCH FROM te.rest)::bigint, 0) as bigint),
                 'notes', te.notes
             )
         ) FILTER (WHERE te.id IS NOT NULL),
@@ -190,7 +226,17 @@ SET
     rest = COALESCE($2, rest),
     time = COALESCE($3, time)  -- Общее время упражнения (doing + rest)
 WHERE id = $4 AND training_id = $5
-RETURNING *;
+RETURNING 
+    id,
+    training_id,
+    exercise_id,
+    weight,
+    approaches,
+    reps,
+    CAST(COALESCE(EXTRACT(EPOCH FROM time)::bigint, 0) as bigint) as time,
+    CAST(COALESCE(EXTRACT(EPOCH FROM doing)::bigint, 0)as bigint) as doing,
+    CAST(COALESCE(EXTRACT(EPOCH FROM rest)::bigint, 0)as bigint) as rest,
+    notes;
 
 -- name: UpdateTrainingTimers :one
 -- Обновление времени тренировки (старт, финиш, общая продолжительность)
@@ -202,7 +248,18 @@ SET
     total_rest_time = COALESCE($4, total_rest_time),
     total_exercise_time = COALESCE($5, total_exercise_time)
 WHERE id = $6
-RETURNING *;
+RETURNING 
+    id,
+    user_id,
+    is_done,
+    planned_date,
+    actual_date,
+    started_at,
+    finished_at,
+    CAST(COALESCE(EXTRACT(EPOCH FROM total_duration)::bigint, 0) as bigint) as total_duration,
+    CAST(COALESCE(EXTRACT(EPOCH FROM total_rest_time)::bigint, 0)as bigint) as total_rest_time,
+    CAST(COALESCE(EXTRACT(EPOCH FROM total_exercise_time)::bigint, 0)as bigint) as total_exercise_time,
+    rating;
 
 -- name: CalculateTrainingTotalTime :one
 -- Расчет общего времени тренировки на основе всех упражнений
@@ -216,7 +273,17 @@ WHERE te.training_id = $1;
 -- name: GetCurrentTraining :one
 -- Получение тренировки на сегодня для пользователя
 SELECT 
-    t.*,
+    t.id,
+    t.user_id,
+    t.is_done,
+    t.planned_date,
+    t.actual_date,
+    t.started_at,
+    t.finished_at,
+    CAST(COALESCE(EXTRACT(EPOCH FROM t.total_duration)::bigint, 0) as bigint) as total_duration,
+    CAST(COALESCE(EXTRACT(EPOCH FROM t.total_rest_time)::bigint, 0)as bigint) as total_rest_time,
+    CAST(COALESCE(EXTRACT(EPOCH FROM t.total_exercise_time)::bigint, 0)as bigint) as total_exercise_time,
+    t.rating,
     COALESCE(
         json_agg(
             json_build_object(
@@ -225,9 +292,9 @@ SELECT
                 'weight', te.weight,
                 'approaches', te.approaches,
                 'reps', te.reps,
-                'time', te.time,
-                'doing', te.doing,
-                'rest', te.rest,
+                'time', CAST(COALESCE(EXTRACT(EPOCH FROM te.time)::bigint, 0) as bigint),
+                'doing', CAST(COALESCE(EXTRACT(EPOCH FROM te.doing)::bigint, 0) as bigint),
+                'rest', CAST(COALESCE(EXTRACT(EPOCH FROM te.rest)::bigint, 0) as bigint),
                 'notes', te.notes
             )
         ) FILTER (WHERE te.id IS NOT NULL),
@@ -245,7 +312,17 @@ LIMIT 1;
 -- name: GetTodaysTraining :many
 -- Получение всех тренировок на сегодня для пользователя
 SELECT 
-    t.*,
+    t.id,
+    t.user_id,
+    t.is_done,
+    t.planned_date,
+    t.actual_date,
+    t.started_at,
+    t.finished_at,
+    CAST(COALESCE(EXTRACT(EPOCH FROM t.total_duration)::bigint, 0) as bigint) as total_duration,
+    CAST(COALESCE(EXTRACT(EPOCH FROM t.total_rest_time)::bigint, 0)as bigint) as total_rest_time,
+    CAST(COALESCE(EXTRACT(EPOCH FROM t.total_exercise_time)::bigint, 0)as bigint) as total_exercise_time,
+    t.rating,
     COALESCE(
         json_agg(
             json_build_object(
@@ -254,9 +331,9 @@ SELECT
                 'weight', te.weight,
                 'approaches', te.approaches,
                 'reps', te.reps,
-                'time', te.time,
-                'doing', te.doing,
-                'rest', te.rest,
+                'time', CAST(COALESCE(EXTRACT(EPOCH FROM te.time)::bigint, 0) as bigint),
+                'doing', CAST(COALESCE(EXTRACT(EPOCH FROM te.doing)::bigint, 0) as bigint),
+                'rest', CAST(COALESCE(EXTRACT(EPOCH FROM te.rest)::bigint, 0) as bigint),
                 'notes', te.notes
             )
         ) FILTER (WHERE te.id IS NOT NULL),
@@ -388,7 +465,18 @@ SET
     actual_date = CURRENT_DATE,
     finished_at = COALESCE($1, CURRENT_TIMESTAMP)
 WHERE id = $2 AND user_id = $3
-RETURNING *;
+RETURNING 
+    id,
+    user_id,
+    is_done,
+    planned_date,
+    actual_date,
+    started_at,
+    finished_at,
+    CAST(COALESCE(EXTRACT(EPOCH FROM total_duration)::bigint, 0) as bigint) as total_duration,
+    CAST(COALESCE(EXTRACT(EPOCH FROM total_rest_time)::bigint, 0)as bigint) as total_rest_time,
+    CAST(COALESCE(EXTRACT(EPOCH FROM total_exercise_time)::bigint, 0)as bigint) as total_exercise_time,
+    rating;
 
 -- name: GetTrainingStats :one
 -- Получение статистики по тренировке (общее время выполнения и отдыха)
@@ -412,7 +500,18 @@ SET
     started_at = COALESCE($1, CURRENT_TIMESTAMP),
     is_done = false
 WHERE id = $2 AND user_id = $3
-RETURNING *;
+RETURNING 
+    id,
+    user_id,
+    is_done,
+    planned_date,
+    actual_date,
+    started_at,
+    finished_at,
+    CAST(COALESCE(EXTRACT(EPOCH FROM total_duration)::bigint, 0) as bigint) as total_duration,
+    CAST(COALESCE(EXTRACT(EPOCH FROM total_rest_time)::bigint, 0)as bigint) as total_rest_time,
+    CAST(COALESCE(EXTRACT(EPOCH FROM total_exercise_time)::bigint, 0)as bigint) as total_exercise_time,
+    rating;
 
 -- name: GetGlobalTrainingById :one
 SELECT id, level
