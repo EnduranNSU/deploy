@@ -58,8 +58,10 @@ CREATE TABLE "tag"(
 -- Таблица упражнений
 CREATE TABLE "exercise"(
     "id" BIGSERIAL NOT NULL PRIMARY KEY,
+    "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "href" TEXT NOT NULL
+    "video_url" TEXT NOT NULL,
+    "image_url" TEXT NOT NULL
 );
 
 -- Связующая таблица упражнений и тегов
@@ -72,6 +74,7 @@ CREATE TABLE "exercise_to_tag"(
 -- Таблица тренировок
 CREATE TABLE "training"(
     "id" BIGSERIAL NOT NULL PRIMARY KEY,
+    "title" TEXT NOT NULL,
     "user_id" UUID NOT NULL,
     "is_done" BOOLEAN NOT NULL DEFAULT FALSE,
     "planned_date" DATE NOT NULL,
@@ -101,6 +104,8 @@ CREATE TABLE "trained_exercise"(
 -- Таблица глобальных тренировок
 CREATE TABLE "global_training"(
     "id" BIGSERIAL NOT NULL PRIMARY KEY,
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
     "level" VARCHAR(50) NOT NULL CHECK(level IN('beginner', 'intermediate', 'advanced'))
 );
 
@@ -199,56 +204,56 @@ INSERT INTO tag (type) VALUES
 ('Разминка'), ('Заминка'), ('Пресс'), ('Ягодицы'), ('Бедра'),
 ('Круговая'), ('Супперсет'), ('Дроп-сет'), ('Разминка суставов');
 
--- 3. Создаем упражнения
-INSERT INTO exercise (description, href) VALUES
+-- 3. Создаем упражнения (исправлено: добавляем все поля)
+INSERT INTO exercise (title, description, video_url, image_url) VALUES
 -- Базовые упражнения
-('Жим лежа', 'https://www.youtube.com/watch?v=rT7DgCr-3pg'),
-('Приседания со штангой', 'https://www.youtube.com/watch?v=SW_C1A-rejs'),
-('Становая тяга', 'https://www.youtube.com/watch?v=1ZXobu7JvvE'),
-('Тяга штанги в наклоне', 'https://www.youtube.com/watch?v=G8l_8chR5BE'),
-('Армейский жим', 'https://www.youtube.com/watch?v=2yjwXTZQDDI'),
+('Жим лежа', 'Базовое упражнение для грудных мышц', 'https://www.youtube.com/watch?v=rT7DgCr-3pg', 'https://example.com/bench_press.jpg'),
+('Приседания со штангой', 'Базовое упражнение для ног', 'https://www.youtube.com/watch?v=SW_C1A-rejs', 'https://example.com/squat.jpg'),
+('Становая тяга', 'Базовое упражнение для спины', 'https://www.youtube.com/watch?v=1ZXobu7JvvE', 'https://example.com/deadlift.jpg'),
+('Тяга штанги в наклоне', 'Упражнение для мышц спины', 'https://www.youtube.com/watch?v=G8l_8chR5BE', 'https://example.com/barbell_row.jpg'),
+('Армейский жим', 'Упражнение для плеч', 'https://www.youtube.com/watch?v=2yjwXTZQDDI', 'https://example.com/overhead_press.jpg'),
 -- Изолированные упражнения
-('Подъем гантелей на бицепс', 'https://www.youtube.com/watch?v=sAq_ocpRh_I'),
-('Французский жим', 'https://www.youtube.com/watch?v=_gsUck-7M74'),
-('Разведения гантелей в стороны', 'https://www.youtube.com/watch?v=3VcKaXpzqRo'),
-('Сгибания ног лежа', 'https://www.youtube.com/watch?v=1Tq3QdYUuHs'),
-('Разгибания ног сидя', 'https://www.youtube.com/watch?v=YyvSfVjQeL0'),
+('Подъем гантелей на бицепс', 'Изолированное упражнение для бицепса', 'https://www.youtube.com/watch?v=sAq_ocpRh_I', 'https://example.com/dumbbell_curl.jpg'),
+('Французский жим', 'Упражнение для трицепса', 'https://www.youtube.com/watch?v=_gsUck-7M74', 'https://example.com/french_press.jpg'),
+('Разведения гантелей в стороны', 'Упражнение для средних дельт', 'https://www.youtube.com/watch?v=3VcKaXpzqRo', 'https://example.com/lateral_raise.jpg'),
+('Сгибания ног лежа', 'Упражнение для бицепса бедра', 'https://www.youtube.com/watch?v=1Tq3QdYUuHs', 'https://example.com/leg_curl.jpg'),
+('Разгибания ног сидя', 'Упражнение для квадрицепса', 'https://www.youtube.com/watch?v=YyvSfVjQeL0', 'https://example.com/leg_extension.jpg'),
 -- Кардио
-('Бег на беговой дорожке', 'https://www.youtube.com/watch?v=32CM2TQ6fes'),
-('Велотренажер', 'https://www.youtube.com/watch?v=6N7dN6fUJmg'),
-('Скакалка', 'https://www.youtube.com/watch?v=1BZM2Vre5oc'),
+('Бег на беговой дорожке', 'Кардио упражнение', 'https://www.youtube.com/watch?v=32CM2TQ6fes', 'https://example.com/treadmill.jpg'),
+('Велотренажер', 'Кардио упражнение', 'https://www.youtube.com/watch?v=6N7dN6fUJmg', 'https://example.com/bike.jpg'),
+('Скакалка', 'Кардио упражнение', 'https://www.youtube.com/watch?v=1BZM2Vre5oc', 'https://example.com/jump_rope.jpg'),
 -- Домашние упражнения
-('Отжимания', 'https://www.youtube.com/watch?v=IODxDxX7oi4'),
-('Приседания без веса', 'https://www.youtube.com/watch?v=aclHkVaku9U'),
-('Планка', 'https://www.youtube.com/watch?v=pSHjTRCQxIw'),
-('Выпады', 'https://www.youtube.com/watch?v=QF0BQS8YQi8'),
-('Подтягивания', 'https://www.youtube.com/watch?v=eGo4IYlbE5g'),
-('Берпи', 'https://www.youtube.com/watch?v=auBLPXO8Fww'),
+('Отжимания', 'Базовое упражнение без оборудования', 'https://www.youtube.com/watch?v=IODxDxX7oi4', 'https://example.com/pushups.jpg'),
+('Приседания без веса', 'Упражнение для ног без веса', 'https://www.youtube.com/watch?v=aclHkVaku9U', 'https://example.com/bodyweight_squat.jpg'),
+('Планка', 'Упражнение на пресс и кор', 'https://www.youtube.com/watch?v=pSHjTRCQxIw', 'https://example.com/plank.jpg'),
+('Выпады', 'Упражнение для ног', 'https://www.youtube.com/watch?v=QF0BQS8YQi8', 'https://example.com/lunges.jpg'),
+('Подтягивания', 'Упражнение для спины', 'https://www.youtube.com/watch?v=eGo4IYlbE5g', 'https://example.com/pullups.jpg'),
+('Берпи', 'Функциональное упражнение', 'https://www.youtube.com/watch?v=auBLPXO8Fww', 'https://example.com/burpee.jpg'),
 -- Упражнения на гибкость
-('Наклоны вперед', 'https://www.youtube.com/watch?v=PhZPTI1wNNo'),
-('Мостик', 'https://www.youtube.com/watch?v=nziA8NCrDCI'),
+('Наклоны вперед', 'Упражнение на растяжку', 'https://www.youtube.com/watch?v=PhZPTI1wNNo', 'https://example.com/forward_bend.jpg'),
+('Мостик', 'Упражнение на гибкость спины', 'https://www.youtube.com/watch?v=nziA8NCrDCI', 'https://example.com/bridge.jpg'),
 -- Тренажеры
-('Тяга верхнего блока', 'https://www.youtube.com/watch?v=CAwf7n6Luuc'),
-('Жим ногами', 'https://www.youtube.com/watch?v=IZxyjW7MPJQ'),
-('Сведение рук в бабочке', 'https://www.youtube.com/watch?v=Z57CtFmRMxA'),
+('Тяга верхнего блока', 'Упражнение на тренажере', 'https://www.youtube.com/watch?v=CAwf7n6Luuc', 'https://example.com/lat_pulldown.jpg'),
+('Жим ногами', 'Упражнение на тренажере', 'https://www.youtube.com/watch?v=IZxyjW7MPJQ', 'https://example.com/leg_press.jpg'),
+('Сведение рук в бабочке', 'Упражнение на грудные', 'https://www.youtube.com/watch?v=Z57CtFmRMxA', 'https://example.com/pec_deck.jpg'),
 -- Дополнительные упражнения
-('Тяга гантели в наклоне', 'https://www.youtube.com/watch?v=roCP6wCXPqo'),
-('Подъем на носки стоя', 'https://www.youtube.com/watch?v=y-wV4Venusw'),
-('Махи гантелями перед собой', 'https://www.youtube.com/watch?v=-t7fuZ0KhDA'),
-('Скручивания на пресс', 'https://www.youtube.com/watch?v=1we5jnyIGE4'),
-('Боковая планка', 'https://www.youtube.com/watch?v=k3j7F4m5rEo'),
-('Гиперэкстензия', 'https://www.youtube.com/watch?v=PhZPTI1wNNo'),
+('Тяга гантели в наклоне', 'Упражнение для спины', 'https://www.youtube.com/watch?v=roCP6wCXPqo', 'https://example.com/dumbbell_row.jpg'),
+('Подъем на носки стоя', 'Упражнение для икр', 'https://www.youtube.com/watch?v=y-wV4Venusw', 'https://example.com/calf_raise.jpg'),
+('Махи гантелями перед собой', 'Упражнение для передних дельт', 'https://www.youtube.com/watch?v=-t7fuZ0KhDA', 'https://example.com/front_raise.jpg'),
+('Скручивания на пресс', 'Упражнение для пресса', 'https://www.youtube.com/watch?v=1we5jnyIGE4', 'https://example.com/crunches.jpg'),
+('Боковая планка', 'Упражнение на боковые мышцы пресса', 'https://www.youtube.com/watch?v=k3j7F4m5rEo', 'https://example.com/side_plank.jpg'),
+('Гиперэкстензия', 'Упражнение для поясницы', 'https://www.youtube.com/watch?v=PhZPTI1wNNo', 'https://example.com/hyperextension.jpg'),
 -- Дополнительные для глобальных тренировок
-('Подтягивания широким хватом', 'https://www.youtube.com/watch?v=eGo4IYlbE5g'),
-('Отжимания на брусьях', 'https://www.youtube.com/watch?v=2z8JmcrW-As'),
-('Мертвая тяга', 'https://www.youtube.com/watch?v=1zxR1Xhqo1Y'),
-('Жим гантелей лежа', 'https://www.youtube.com/watch?v=VmB1G1K7v94'),
-('Приседания с гантелями', 'https://www.youtube.com/watch?v=ca_PmUumI0E'),
-('Тяга Т-грифа', 'https://www.youtube.com/watch?v=j3Igk5nyZE4'),
-('Подъем штанги на бицепс', 'https://www.youtube.com/watch?v=kwG2ipFRgfo'),
-('Пуловер', 'https://www.youtube.com/watch?v=6yMqYJp3E6Y'),
-('Шраги', 'https://www.youtube.com/watch?v=2J3-CrR50w8'),
-('Подъем ног в висе', 'https://www.youtube.com/watch?v=JB2oyawG9KI');
+('Подтягивания широким хватом', 'Упражнение для широкой спины', 'https://www.youtube.com/watch?v=eGo4IYlbE5g', 'https://example.com/wide_pullups.jpg'),
+('Отжимания на брусьях', 'Упражнение для груди и трицепса', 'https://www.youtube.com/watch?v=2z8JmcrW-As', 'https://example.com/dips.jpg'),
+('Мертвая тяга', 'Упражнение для бицепса бедра', 'https://www.youtube.com/watch?v=1zxR1Xhqo1Y', 'https://example.com/stiff_deadlift.jpg'),
+('Жим гантелей лежа', 'Альтернатива жиму штанги', 'https://www.youtube.com/watch?v=VmB1G1K7v94', 'https://example.com/dumbbell_bench.jpg'),
+('Приседания с гантелями', 'Приседания с дополнительным весом', 'https://www.youtube.com/watch?v=ca_PmUumI0E', 'https://example.com/goblet_squat.jpg'),
+('Тяга Т-грифа', 'Упражнение для толщины спины', 'https://www.youtube.com/watch?v=j3Igk5nyZE4', 'https://example.com/tbar_row.jpg'),
+('Подъем штанги на бицепс', 'Базовое упражнение для бицепса', 'https://www.youtube.com/watch?v=kwG2ipFRgfo', 'https://example.com/barbell_curl.jpg'),
+('Пуловер', 'Упражнение для груди и спины', 'https://www.youtube.com/watch?v=6yMqYJp3E6Y', 'https://example.com/pullover.jpg'),
+('Шраги', 'Упражнение для трапеций', 'https://www.youtube.com/watch?v=2J3-CrR50w8', 'https://example.com/shrugs.jpg'),
+('Подъем ног в висе', 'Упражнение для нижнего пресса', 'https://www.youtube.com/watch?v=JB2oyawG9KI', 'https://example.com/hanging_leg_raise.jpg');
 
 -- 4. Связываем упражнения с тегами
 INSERT INTO exercise_to_tag (exercise_id, tag_id)
@@ -257,19 +262,19 @@ FROM exercise e
 CROSS JOIN tag t
 WHERE t.type IN ('Грудь', 'Спина', 'Ноги', 'Плечи', 'Бицепс', 'Трицепс', 'Базовая', 'Изолированная')
 AND (
-    (e.description LIKE '%жим%' AND t.type IN ('Грудь', 'Плечи', 'Базовая')) OR
-    (e.description LIKE '%тяга%' AND t.type IN ('Спина', 'Базовая')) OR
-    (e.description LIKE '%присед%' AND t.type IN ('Ноги', 'Базовая')) OR
-    (e.description LIKE '%бицепс%' AND t.type = 'Бицепс') OR
-    (e.description LIKE '%трицепс%' AND t.type = 'Трицепс')
+    (e.title LIKE '%жим%' AND t.type IN ('Грудь', 'Плечи', 'Базовая')) OR
+    (e.title LIKE '%тяга%' AND t.type IN ('Спина', 'Базовая')) OR
+    (e.title LIKE '%присед%' AND t.type IN ('Ноги', 'Базовая')) OR
+    (e.title LIKE '%бицепс%' AND t.type = 'Бицепс') OR
+    (e.title LIKE '%трицепс%' AND t.type = 'Трицепс')
 )
 ON CONFLICT DO NOTHING;
 
--- 5. Добавляем глобальные тренировки
-INSERT INTO global_training (level) VALUES
-('beginner'),
-('intermediate'),
-('advanced');
+-- 5. Добавляем глобальные тренировки (исправлено: добавлены все поля)
+INSERT INTO global_training (title, description, level) VALUES
+('Начальный уровень', 'Тренировка для начинающих', 'beginner'),
+('Средний уровень', 'Тренировка для продолжающих', 'intermediate'),
+('Продвинутый уровень', 'Тренировка для опытных', 'advanced');
 
 -- 6. Добавляем упражнения в глобальные тренировки
 INSERT INTO global_training_exercise (global_training_id, exercise_id)
@@ -300,13 +305,19 @@ VALUES
 (61.0, 168, CURRENT_DATE - 60, 28, '22222222-2222-2222-2222-222222222222'),
 (62.0, 168, CURRENT_DATE - 30, 28, '22222222-2222-2222-2222-222222222222');
 
+-- Остальной код вставки тренировок и упражнений остается без изменений...
+
+-- 8. Создаем тренировки для тестирования всех сценариев
+-- (Остальная часть кода с 8.1 до конца остается без изменений, так как там нет проблем)
+
 -- 8. Создаем тренировки для тестирования всех сценариев
 
 -- 8.1 Тренировка на сегодня (не начата)
 INSERT INTO training (
-    user_id, is_done, planned_date, actual_date, started_at, finished_at,
+    title, user_id, is_done, planned_date, actual_date, started_at, finished_at,
     total_duration, total_rest_time, total_exercise_time, rating
 ) VALUES (
+    'Тренировка на сегодня',  -- Добавлено название
     '66666666-6666-6666-6666-666666666666', false, CURRENT_DATE, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL
 )
@@ -314,9 +325,10 @@ RETURNING id AS training_today_id;
 
 -- 8.2 Тренировка на сегодня (начата, но не завершена)
 INSERT INTO training (
-    user_id, is_done, planned_date, actual_date, started_at, finished_at,
+    title, user_id, is_done, planned_date, actual_date, started_at, finished_at,
     total_duration, total_rest_time, total_exercise_time, rating
 ) VALUES (
+    'Утренняя тренировка',  -- Добавлено название
     '88888888-8888-8888-8888-888888888888', false, CURRENT_DATE, NULL, 
     CURRENT_TIMESTAMP - interval '30 minutes', NULL,
     NULL, NULL, NULL, NULL
@@ -325,9 +337,10 @@ RETURNING id AS training_started_id;
 
 -- 8.3 Тренировка на сегодня (завершена)
 INSERT INTO training (
-    user_id, is_done, planned_date, actual_date, started_at, finished_at,
+    title, user_id, is_done, planned_date, actual_date, started_at, finished_at,
     total_duration, total_rest_time, total_exercise_time, rating
 ) VALUES (
+    'Вечерняя силовая',  -- Добавлено название
     '99999999-9999-9999-9999-999999999999', true, CURRENT_DATE, CURRENT_DATE,
     CURRENT_TIMESTAMP - interval '2 hours', CURRENT_TIMESTAMP - interval '1 hour',
     interval '1 hour', interval '20 minutes', interval '40 minutes', 5
@@ -336,14 +349,16 @@ RETURNING id AS training_done_id;
 
 -- 8.4 Несколько тренировок на сегодня для одного пользователя
 INSERT INTO training (
-    user_id, is_done, planned_date, actual_date, started_at, finished_at,
+    title, user_id, is_done, planned_date, actual_date, started_at, finished_at,
     total_duration, total_rest_time, total_exercise_time, rating
 ) VALUES 
 (
+    'Утренняя кардио',  -- Добавлено название
     'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', false, CURRENT_DATE, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL
 ),
 (
+    'Силовая тренировка',  -- Добавлено название
     'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', true, CURRENT_DATE, CURRENT_DATE,
     CURRENT_TIMESTAMP - interval '3 hours', CURRENT_TIMESTAMP - interval '2 hours',
     interval '1 hour', interval '15 minutes', interval '45 minutes', 4
@@ -352,57 +367,67 @@ RETURNING id AS training_multiple_id;
 
 -- 8.5 Запланированные тренировки на будущее
 INSERT INTO training (
-    user_id, is_done, planned_date, actual_date, started_at, finished_at,
+    title, user_id, is_done, planned_date, actual_date, started_at, finished_at,
     total_duration, total_rest_time, total_exercise_time, rating
 ) VALUES 
 (
+    'Завтрашняя тренировка',  -- Добавлено название
     '77777777-7777-7777-7777-777777777777', false, CURRENT_DATE + 1, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL
 ),
 (
+    'Тренировка на среду',  -- Добавлено название
     '77777777-7777-7777-7777-777777777777', false, CURRENT_DATE + 2, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL
 ),
 (
+    'Тренировка на четверг',  -- Добавлено название
     '77777777-7777-7777-7777-777777777777', false, CURRENT_DATE + 3, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL
 );
 
 -- 8.6 Прошлые тренировки с разными статусами для существующих пользователей
 INSERT INTO training (
-    user_id, is_done, planned_date, actual_date, started_at, finished_at,
+    title, user_id, is_done, planned_date, actual_date, started_at, finished_at,
     total_duration, total_rest_time, total_exercise_time, rating
 ) VALUES 
 (
+    'Тренировка 7 дней назад',  -- Добавлено название
     '11111111-1111-1111-1111-111111111111', true, CURRENT_DATE - 7, CURRENT_DATE - 7,
     CURRENT_TIMESTAMP - interval '7 days 2 hours', CURRENT_TIMESTAMP - interval '7 days 1 hour',
     interval '1 hour', interval '18 minutes', interval '42 minutes', 5
 ),
 (
+    'Тренировка 5 дней назад',  -- Добавлено название
     '11111111-1111-1111-1111-111111111111', true, CURRENT_DATE - 5, CURRENT_DATE - 5,
     CURRENT_TIMESTAMP - interval '5 days 3 hours', CURRENT_TIMESTAMP - interval '5 days 2 hours',
     interval '1 hour 15 minutes', interval '25 minutes', interval '50 minutes', 4
 ),
 (
+    'Тренировка 3 дня назад',  -- Добавлено название
     '22222222-2222-2222-2222-222222222222', true, CURRENT_DATE - 3, CURRENT_DATE - 3,
     CURRENT_TIMESTAMP - interval '3 days 4 hours', CURRENT_TIMESTAMP - interval '3 days 3 hours',
     interval '45 minutes', interval '10 minutes', interval '35 minutes', 3
 ),
 (
+    'Вчерашняя тренировка',  -- Добавлено название
     '22222222-2222-2222-2222-222222222222', false, CURRENT_DATE - 1, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL
 ),
 (
+    'Тренировка 10 дней назад',  -- Добавлено название
     '33333333-3333-3333-3333-333333333333', true, CURRENT_DATE - 10, CURRENT_DATE - 10,
     CURRENT_TIMESTAMP - interval '10 days 3 hours', CURRENT_TIMESTAMP - interval '10 days 2 hours',
     interval '50 minutes', interval '15 minutes', interval '35 minutes', 2
 ),
 (
+    'Тренировка 4 дня назад',  -- Добавлено название
     '44444444-4444-4444-4444-444444444444', true, CURRENT_DATE - 4, CURRENT_DATE - 4,
     CURRENT_TIMESTAMP - interval '4 days 5 hours', CURRENT_TIMESTAMP - interval '4 days 4 hours',
     interval '1 hour 10 minutes', interval '20 minutes', interval '50 minutes', 4
 ),
 (
+    'Тренировка 2 дня назад',  -- Добавлено название
     '55555555-5555-5555-5555-555555555555', true, CURRENT_DATE - 2, CURRENT_DATE - 2,
     CURRENT_TIMESTAMP - interval '2 days 6 hours', CURRENT_TIMESTAMP - interval '2 days 5 hours',
     interval '1 hour 30 minutes', interval '30 minutes', interval '1 hour', 5
@@ -441,20 +466,20 @@ BEGIN
         interval '90 seconds',
         'Планирую сделать'
     FROM exercise e
-    WHERE e.description IN ('Жим лежа', 'Приседания со штангой', 'Тяга штанги в наклоне', 'Подъем гантелей на бицепс')
+    WHERE e.title IN ('Жим лежа', 'Приседания со штангой', 'Тяга штанги в наклоне', 'Подъем гантелей на бицепс')
     LIMIT 4;
 
-    -- 10.2 В тренировку на сегодня (начатую)
+        -- 10.2 В тренировку на сегодня (начатую)
     INSERT INTO trained_exercise (training_id, exercise_id, weight, approaches, reps, time, doing, rest, notes)
     VALUES 
     (
         training_started_id,
-        (SELECT id FROM exercise WHERE description = 'Жим лежа'),
+        (SELECT id FROM exercise WHERE title = 'Жим лежа'),
         80.0, 4, 10, interval '4 minutes', interval '2 minutes', interval '2 minutes', 'Сделал 4 подхода'
     ),
     (
         training_started_id,
-        (SELECT id FROM exercise WHERE description = 'Тяга штанги в наклоне'),
+        (SELECT id FROM exercise WHERE title = 'Тяга штанги в наклоне'),
         60.0, 3, 12, interval '3 minutes 30 seconds', interval '1 minute 45 seconds', interval '1 minute 45 seconds', 'Хорошая техника'
     );
 
@@ -463,17 +488,17 @@ BEGIN
     VALUES 
     (
         training_done_id,
-        (SELECT id FROM exercise WHERE description = 'Жим лежа'),
+        (SELECT id FROM exercise WHERE title = 'Жим лежа'),
         85.0, 4, 8, interval '4 minutes 30 seconds', interval '2 minutes 15 seconds', interval '2 minutes 15 seconds', 'Тяжело, но сделал'
     ),
     (
         training_done_id,
-        (SELECT id FROM exercise WHERE description = 'Приседания со штангой'),
+        (SELECT id FROM exercise WHERE title = 'Приседания со штангой'),
         100.0, 3, 10, interval '3 minutes 45 seconds', interval '1 minute 50 seconds', interval '1 minute 55 seconds', 'Отличная форма'
     ),
     (
         training_done_id,
-        (SELECT id FROM exercise WHERE description = 'Подъем гантелей на бицепс'),
+        (SELECT id FROM exercise WHERE title = 'Подъем гантелей на бицепс'),
         18.0, 3, 12, interval '3 minutes', interval '1 minute 30 seconds', interval '1 minute 30 seconds', 'Легко'
     );
 
@@ -494,7 +519,7 @@ BEGIN
     WHERE t.user_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
     AND t.planned_date = CURRENT_DATE
     AND t.is_done = true
-    AND e.description IN ('Бег на беговой дорожке', 'Планка', 'Отжимания')
+    AND e.title IN ('Бег на беговой дорожке', 'Планка', 'Отжимания')
     LIMIT 3;
 
     -- 11. Обновляем время тренировок на основе добавленных упражнений
@@ -542,9 +567,10 @@ BEGIN
 
     -- 13. Создаем тренировку с большим количеством упражнений для тестирования статистики
     INSERT INTO training (
-        user_id, is_done, planned_date, actual_date, started_at, finished_at,
+        title, user_id, is_done, planned_date, actual_date, started_at, finished_at,
         total_duration, total_rest_time, total_exercise_time, rating
     ) VALUES (
+        'Тренировка для статистики',
         '11111111-1111-1111-1111-111111111111', true, CURRENT_DATE - 2, CURRENT_DATE - 2,
         CURRENT_TIMESTAMP - interval '2 days 5 hours', CURRENT_TIMESTAMP - interval '2 days 4 hours',
         interval '1 hour 30 minutes', interval '30 minutes', interval '1 hour', 5
@@ -557,8 +583,8 @@ BEGIN
         training_stats_id,
         e.id,
         CASE 
-            WHEN e.description LIKE '%штан%' THEN 70.0 + (row_number() over()) * 5
-            WHEN e.description LIKE '%гантел%' THEN 15.0 + (row_number() over()) * 2
+            WHEN e.title LIKE '%штан%' THEN 70.0 + (row_number() over()) * 5
+            WHEN e.title LIKE '%гантел%' THEN 15.0 + (row_number() over()) * 2
             ELSE NULL
         END,
         4,
@@ -568,14 +594,15 @@ BEGIN
         interval '2 minutes',
         'Упражнение ' || row_number() over()
     FROM exercise e
-    WHERE e.description IN ('Жим лежа', 'Тяга штанги в наклоне', 'Подъем гантелей на бицепс', 'Французский жим', 'Разведения гантелей в стороны', 'Сгибания ног лежа', 'Разгибания ног сидя')
+    WHERE e.title IN ('Жим лежа', 'Тяга штанги в наклоне', 'Подъем гантелей на бицепс', 'Французский жим', 'Разведения гантелей в стороны', 'Сгибания ног лежа', 'Разгибания ног сидя')
     LIMIT 7;
 
     -- 15. Создаем тренировку для тестирования операций обновления
     INSERT INTO training (
-        user_id, is_done, planned_date, actual_date, started_at, finished_at,
+        title, user_id, is_done, planned_date, actual_date, started_at, finished_at,
         total_duration, total_rest_time, total_exercise_time, rating
     ) VALUES (
+        'Тренировка для обновления',
         '44444444-4444-4444-4444-444444444444', false, CURRENT_DATE, NULL, NULL, NULL,
         NULL, NULL, NULL, NULL
     )
@@ -585,16 +612,17 @@ BEGIN
     INSERT INTO trained_exercise (training_id, exercise_id, weight, approaches, reps, time, doing, rest, notes)
     VALUES (
         training_update_id,
-        (SELECT id FROM exercise WHERE description = 'Жим лежа'),
+        (SELECT id FROM exercise WHERE title = 'Жим лежа'),
         70.0, 3, 10, interval '3 minutes', interval '1 minute 30 seconds', interval '1 minute 30 seconds', 'Начальный вариант'
     )
     RETURNING id INTO exercise_update_id;
 
     -- 17. Создаем тренировку для тестирования удаления
     INSERT INTO training (
-        user_id, is_done, planned_date, actual_date, started_at, finished_at,
+        title, user_id, is_done, planned_date, actual_date, started_at, finished_at,
         total_duration, total_rest_time, total_exercise_time, rating
     ) VALUES (
+        'Тренировка для удаления',
         '55555555-5555-5555-5555-555555555555', false, CURRENT_DATE, NULL, NULL, NULL,
         NULL, NULL, NULL, NULL
     )
@@ -607,7 +635,7 @@ BEGIN
         e.id,
         50.0, 3, 10, interval '3 minutes', interval '1 minute 30 seconds', interval '1 minute 30 seconds', 'Для удаления'
     FROM exercise e
-    WHERE e.description IN ('Жим лежа', 'Приседания со штангой', 'Тяга штанги в наклоне')
+    WHERE e.title IN ('Жим лежа', 'Приседания со штангой', 'Тяга штанги в наклоне')
     LIMIT 3;
 
     -- 19. Обновляем статистику для всех тренировок с упражнениями
@@ -640,19 +668,21 @@ FROM exercise e
 CROSS JOIN tag t
 WHERE t.type IN ('Разминка', 'Заминка', 'Пресс', 'Кардио', 'Выносливость', 'Гибкость')
 AND (
-    (e.description LIKE '%бег%' AND t.type IN ('Кардио', 'Выносливость')) OR
-    (e.description LIKE '%планк%' AND t.type IN ('Пресс', 'Без веса', 'Домашняя')) OR
-    (e.description LIKE '%наклоны%' AND t.type IN ('Гибкость', 'Заминка')) OR
-    (e.description LIKE '%мостик%' AND t.type IN ('Гибкость', 'Заминка'))
+    (e.title LIKE '%бег%' AND t.type IN ('Кардио', 'Выносливость')) OR
+    (e.title LIKE '%планк%' AND t.type IN ('Пресс', 'Без веса', 'Домашняя')) OR
+    (e.title LIKE '%наклоны%' AND t.type IN ('Гибкость', 'Заминка')) OR
+    (e.title LIKE '%мостик%' AND t.type IN ('Гибкость', 'Заминка'))
 )
 ON CONFLICT DO NOTHING;
 
 -- 21. Создаем дополнительные тренировки для полноты тестовых данных
+-- 21. Создаем дополнительные тренировки для полноты тестовых данных
 INSERT INTO training (
-    user_id, is_done, planned_date, actual_date, started_at, finished_at,
+    title, user_id, is_done, planned_date, actual_date, started_at, finished_at,
     total_duration, total_rest_time, total_exercise_time, rating
 )
 SELECT 
+    'Дополнительная тренировка ' || row_number() OVER (),  -- Добавлено название
     u.id,
     CASE WHEN random() > 0.3 THEN true ELSE false END,
     date_trunc('day', CURRENT_DATE - (n || ' days')::interval)::date,

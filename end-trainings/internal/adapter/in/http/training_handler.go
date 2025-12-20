@@ -173,6 +173,7 @@ func (h *TrainingHandler) CreateTraining(c *gin.Context) {
 
 	cmd := svctraining.CreateTrainingCmd{
 		UserID:            uid,
+		Title:             req.Title,
 		IsDone:            req.IsDone,
 		PlannedDate:       plannedDate,
 		ActualDate:        actualDate,
@@ -280,6 +281,7 @@ func (h *TrainingHandler) UpdateTraining(c *gin.Context) {
 
 	cmd := svctraining.UpdateTrainingCmd{
 		ID:                trainingID,
+		Title:             req.Title,
 		IsDone:            req.IsDone,
 		PlannedDate:       plannedDate,
 		ActualDate:        actualDate,
@@ -644,6 +646,7 @@ func (h *TrainingHandler) trainingToResponse(training *svctraining.Training) dto
 
 	return dto.TrainingResponse{
 		ID:                training.ID,
+		Title:             training.Title,
 		UserID:            training.UserID.String(),
 		IsDone:            training.IsDone,
 		PlannedDate:       training.PlannedDate.Format(time.RFC3339),
@@ -706,7 +709,6 @@ func formatDuration(d time.Duration) string {
 	}
 	return fmt.Sprintf("%ds", seconds)
 }
-
 
 // UpdateExerciseTime обновляет временные параметры упражнения
 // @Summary      Обновить временные параметры упражнения
@@ -1004,7 +1006,6 @@ func (h *TrainingHandler) GetGlobalTrainingByLevel(c *gin.Context) {
 	for _, gt := range globalTrainings {
 		resp = append(resp, h.globalTrainingWithTagsToResponse(gt))
 	}
-
 
 	c.JSON(http.StatusOK, resp)
 }
@@ -1361,7 +1362,8 @@ func (h *TrainingHandler) globalTrainingWithTagsToResponse(gt *svctraining.Globa
 			exercises = append(exercises, dto.ExerciseWithTagsResponse{
 				ID:          exercise.ID,
 				Description: exercise.Description,
-				VideoURL:    &exercise.Href,
+				VideoURL:    &exercise.VideoUrl,
+				ImageURL:    &exercise.ImageUrl,
 				Tags:        tags,
 			})
 		}
@@ -1369,6 +1371,8 @@ func (h *TrainingHandler) globalTrainingWithTagsToResponse(gt *svctraining.Globa
 
 	return dto.GlobalTrainingWithTagsResponse{
 		ID:          gt.ID,
+		Title:       gt.Title,
+		Description: gt.Description,
 		Level:       gt.Level,
 		Exercises:   exercises,
 	}

@@ -87,8 +87,8 @@ func (r *ExerciseRepositoryImpl) GetExercisesByTag(ctx context.Context, tagID in
 		result[i] = &domain.Exercise{
 			ID:          e.ID,
 			Description: e.Description,
-			Href:        e.Href,
-			// Tags будут загружены отдельно при необходимости
+			VideoUrl: e.VideoUrl,
+			ImageUrl: e.ImageUrl,
 		}
 	}
 
@@ -121,7 +121,7 @@ func (r *ExerciseRepositoryImpl) SearchExercises(ctx context.Context, filter dom
 	if filter.Search != nil && *filter.Search != "" {
 		var filtered []*domain.Exercise
 		for _, exercise := range exercises {
-			if strings.Contains(strings.ToLower(exercise.Description), strings.ToLower(*filter.Search)) {
+			if strings.Contains(strings.ToLower(exercise.Title), strings.ToLower(*filter.Search)) {
 				filtered = append(filtered, exercise)
 			}
 		}
@@ -229,7 +229,8 @@ func (r *ExerciseRepositoryImpl) toDomainExercise(e gen.GetExercisesWithTagsRow)
 	return &domain.Exercise{
 		ID:          e.ID,
 		Description: e.Description,
-		Href:        e.Href,
+		VideoUrl:    e.VideoUrl,
+		ImageUrl:    e.ImageUrl,
 		Tags:        toDomainTags(e.Tags),
 	}
 }
@@ -238,7 +239,8 @@ func (r *ExerciseRepositoryImpl) toDomainExerciseFromJoined(e gen.GetExerciseByI
 	return &domain.Exercise{
 		ID:          e.ID,
 		Description: e.Description,
-		Href:        e.Href,
+		VideoUrl:    e.VideoUrl,
+		ImageUrl:    e.ImageUrl,
 		Tags:        toDomainTags(e.Tags),
 	}
 }

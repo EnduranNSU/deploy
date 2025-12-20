@@ -2,65 +2,70 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Таблица тегов упражнений
-CREATE TABLE tag (
-    id BIGSERIAL PRIMARY KEY NOT NULL,
-    type VARCHAR(255) NOT NULL
+CREATE TABLE "tag"(
+    "id" BIGSERIAL NOT NULL PRIMARY KEY,
+    "type" VARCHAR(255) NOT NULL
 );
 
 -- Таблица упражнений
-CREATE TABLE exercise (
-    id BIGSERIAL PRIMARY KEY NOT NULL,
-    description TEXT NOT NULL,
-    href TEXT NOT NULL
+CREATE TABLE "exercise"(
+    "id" BIGSERIAL NOT NULL PRIMARY KEY,
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "video_url" TEXT NOT NULL,
+    "image_url" TEXT NOT NULL
 );
 
 -- Связующая таблица упражнений и тегов
-CREATE TABLE exercise_to_tag (
-    exercise_id BIGINT NOT NULL,
-    tag_id BIGINT NOT NULL,
-    PRIMARY KEY (exercise_id, tag_id)
+CREATE TABLE "exercise_to_tag"(
+    "exercise_id" BIGINT NOT NULL,
+    "tag_id" BIGINT NOT NULL,
+    PRIMARY KEY ("exercise_id", "tag_id")
 );
 
--- Таблица тренировок (обновленная с таймером)
-CREATE TABLE training (
-    id BIGSERIAL PRIMARY KEY NOT NULL,
-    user_id UUID NOT NULL,
-    is_done BOOLEAN NOT NULL DEFAULT FALSE,
-    planned_date DATE NOT NULL,
-    actual_date DATE NULL,
-    started_at TIMESTAMP NULL,
-    finished_at TIMESTAMP NULL,
-    total_duration INTERVAL NULL,
-    total_rest_time INTERVAL NULL,
-    total_exercise_time INTERVAL NULL,
-    rating INTEGER CHECK(rating >= 1 AND rating <= 5) NULL
+-- Таблица тренировок
+CREATE TABLE "training"(
+    "id" BIGSERIAL NOT NULL PRIMARY KEY,
+    "title" TEXT NOT NULL,
+    "user_id" UUID NOT NULL,
+    "is_done" BOOLEAN NOT NULL DEFAULT FALSE,
+    "planned_date" DATE NOT NULL,
+    "actual_date" DATE NULL,
+    "started_at" TIMESTAMP NULL,
+    "finished_at" TIMESTAMP NULL,
+    "total_duration" INTERVAL NULL,
+    "total_rest_time" INTERVAL NULL,
+    "total_exercise_time" INTERVAL NULL,
+    "rating" INTEGER CHECK(rating >= 1 AND rating <= 5) NULL
 );
 
--- Таблица выполненных упражнений в тренировке (обновленная с таймером)
-CREATE TABLE trained_exercise (
-    id BIGSERIAL PRIMARY KEY NOT NULL,
-    training_id BIGINT NOT NULL,
-    exercise_id BIGINT NOT NULL,
-    weight DECIMAL(5,2) NULL,
-    approaches INTEGER NULL,
-    reps INTEGER NULL,
-    time INTERVAL NULL,
-    doing INTERVAL NULL,
-    rest INTERVAL NULL,
-    notes TEXT NULL
+-- Таблица выполненных упражнений в тренировке
+CREATE TABLE "trained_exercise"(
+    "id" BIGSERIAL NOT NULL PRIMARY KEY,
+    "training_id" BIGINT NOT NULL,
+    "exercise_id" BIGINT NOT NULL,
+    "weight" DECIMAL(5,2) NULL,
+    "approaches" INTEGER NULL,
+    "reps" INTEGER NULL,
+    "time" INTERVAL NULL,
+    "doing" INTERVAL NULL,
+    "rest" INTERVAL NULL,
+    "notes" TEXT NULL
 );
 
 -- Таблица глобальных тренировок
-CREATE TABLE global_training (
-    id BIGSERIAL PRIMARY KEY NOT NULL,
-    level VARCHAR(50) NOT NULL CHECK(level IN('beginner', 'intermediate', 'advanced'))
+CREATE TABLE "global_training"(
+    "id" BIGSERIAL NOT NULL PRIMARY KEY,
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "level" VARCHAR(50) NOT NULL CHECK(level IN('beginner', 'intermediate', 'advanced'))
 );
 
 -- Связующая таблица глобальных тренировок и упражнений
-CREATE TABLE global_training_exercise (
-    id BIGSERIAL PRIMARY KEY NOT NULL,
-    global_training_id BIGINT NOT NULL,
-    exercise_id BIGINT NOT NULL
+CREATE TABLE "global_training_exercise"(
+    "id" BIGSERIAL NOT NULL PRIMARY KEY,
+    "global_training_id" BIGINT NOT NULL,
+    "exercise_id" BIGINT NOT NULL
 );
 
 -- Индексы для производительности

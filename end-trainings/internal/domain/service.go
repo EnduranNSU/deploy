@@ -42,6 +42,7 @@ type TrainingService interface {
 
 type CreateTrainingCmd struct {
 	UserID            uuid.UUID
+	Title             string
 	IsDone            bool
 	PlannedDate       time.Time
 	ActualDate        *time.Time
@@ -55,6 +56,7 @@ type CreateTrainingCmd struct {
 
 type UpdateTrainingCmd struct {
 	ID                int64
+	Title             string
 	IsDone            *bool
 	PlannedDate       time.Time
 	ActualDate        *time.Time
@@ -90,11 +92,10 @@ type UpdateTrainedExerciseCmd struct {
 }
 
 type AssignGlobalTrainingCmd struct {
-    UserID           uuid.UUID
-    GlobalTrainingID int64
-    PlannedDate      time.Time  // Дата, на которую назначается тренировка
+	UserID           uuid.UUID
+	GlobalTrainingID int64
+	PlannedDate      time.Time // Дата, на которую назначается тренировка
 }
-
 
 type ExerciseService interface {
 	GetAllExercises(ctx context.Context) ([]*Exercise, error)

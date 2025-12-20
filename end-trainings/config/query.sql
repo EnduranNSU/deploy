@@ -1,8 +1,10 @@
 -- name: GetExercisesWithTags :many
 SELECT 
     e.id,
+    e.title,
     e.description,
-    e.href,
+    e.video_url,
+    e.image_url,
     COALESCE(
         json_agg(
             json_build_object(
@@ -15,14 +17,16 @@ SELECT
 FROM exercise e
 LEFT JOIN exercise_to_tag et ON e.id = et.exercise_id
 LEFT JOIN tag t ON et.tag_id = t.id
-GROUP BY e.id, e.description, e.href
+GROUP BY e.id, e.description
 ORDER BY e.id;
 
 -- name: GetExerciseByID :one
 SELECT 
     e.id,
+    e.title,
     e.description,
-    e.href,
+    e.video_url,
+    e.image_url,
     COALESCE(
         json_agg(
             json_build_object(
@@ -36,7 +40,7 @@ FROM exercise e
 LEFT JOIN exercise_to_tag et ON e.id = et.exercise_id
 LEFT JOIN tag t ON et.tag_id = t.id
 WHERE e.id = $1
-GROUP BY e.id, e.description, e.href;
+GROUP BY e.id, e.description;
 
 -- name: GetAllTags :many
 SELECT id, type FROM tag ORDER BY id;
@@ -44,8 +48,10 @@ SELECT id, type FROM tag ORDER BY id;
 -- name: GetExercisesByTag :many
 SELECT 
     e.id,
+    e.title,
     e.description,
-    e.href
+    e.video_url,
+    e.image_url
 FROM exercise e
 INNER JOIN exercise_to_tag et ON e.id = et.exercise_id
 WHERE et.tag_id = $1
@@ -54,6 +60,7 @@ ORDER BY e.id;
 -- name: GetTrainingsByUser :many
 SELECT 
     t.id,
+    t.title,
     t.user_id,
     t.is_done,
     t.planned_date,
@@ -72,6 +79,7 @@ ORDER BY t.planned_date DESC;
 
 -- name: CreateTraining :one
 INSERT INTO training (
+    title,
     user_id,
     is_done,
     planned_date,
@@ -83,10 +91,11 @@ INSERT INTO training (
     total_exercise_time,
     rating
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
 )
 RETURNING 
     id,
+    title,
     user_id,
     is_done,
     planned_date,
@@ -149,7 +158,7 @@ RETURNING
 
 -- name: UpdateTraining :one
 UPDATE training
-SET 
+SET
     is_done = COALESCE($1, is_done),
     planned_date = COALESCE($2, planned_date),
     actual_date = COALESCE($3, actual_date),
@@ -158,10 +167,12 @@ SET
     total_duration = COALESCE($6, total_duration),
     total_rest_time = COALESCE($7, total_rest_time),
     total_exercise_time = COALESCE($8, total_exercise_time),
-    rating = COALESCE($9, rating)
-WHERE id = $10
+    rating = COALESCE($9, rating),
+    title = COALESCE($10, title)
+WHERE id = $11
 RETURNING 
     id,
+    title,
     user_id,
     is_done,
     planned_date,
@@ -176,6 +187,7 @@ RETURNING
 -- name: GetTrainingWithExercises :one
 SELECT 
     t.id,
+    t.title,
     t.user_id,
     t.is_done,
     t.planned_date,
@@ -250,6 +262,7 @@ SET
 WHERE id = $6
 RETURNING 
     id,
+    title,
     user_id,
     is_done,
     planned_date,
@@ -274,6 +287,7 @@ WHERE te.training_id = $1;
 -- Получение тренировки на сегодня для пользователя
 SELECT 
     t.id,
+    t.title,
     t.user_id,
     t.is_done,
     t.planned_date,
@@ -313,6 +327,7 @@ LIMIT 1;
 -- Получение всех тренировок на сегодня для пользователя
 SELECT 
     t.id,
+    t.title,
     t.user_id,
     t.is_done,
     t.planned_date,
@@ -350,13 +365,17 @@ ORDER BY t.planned_date DESC;
 -- Получение всех глобальных тренировок с упражнениями и их тегами
 SELECT 
     gt.id,
+    gt.title,
+    gt.description,
     gt.level,
     COALESCE(
         json_agg(
             json_build_object(
                 'id', e.id,
+                'title', e.title,
                 'description', e.description,
-                'href', e.href,
+                'video_url', e.video_url,
+                'image_url', e.image_url,
                 'tags', COALESCE(
                     (
                         SELECT json_agg(
@@ -390,13 +409,17 @@ ORDER BY
 -- Получение глобальной тренировки по ID с упражнениями и их тегами
 SELECT 
     gt.id,
+    gt.title,
+    gt.description,
     gt.level,
     COALESCE(
         json_agg(
             json_build_object(
                 'id', e.id,
+                'title', e.title,
                 'description', e.description,
-                'href', e.href,
+                'video_url', e.video_url,
+                'image_url', e.image_url,
                 'tags', COALESCE(
                     (
                         SELECT json_agg(
@@ -425,13 +448,17 @@ GROUP BY gt.id, gt.level;
 -- Получение глобальных тренировок по уровню с упражнениями и их тегами
 SELECT 
     gt.id,
+    gt.title,
+    gt.description,
     gt.level,
     COALESCE(
         json_agg(
             json_build_object(
                 'id', e.id,
+                'title', e.title,
                 'description', e.description,
-                'href', e.href,
+                'video_url', e.video_url,
+                'image_url', e.image_url,
                 'tags', COALESCE(
                     (
                         SELECT json_agg(
@@ -467,6 +494,7 @@ SET
 WHERE id = $2 AND user_id = $3
 RETURNING 
     id,
+    title,
     user_id,
     is_done,
     planned_date,
@@ -502,6 +530,7 @@ SET
 WHERE id = $2 AND user_id = $3
 RETURNING 
     id,
+    title,
     user_id,
     is_done,
     planned_date,
@@ -514,7 +543,7 @@ RETURNING
     rating;
 
 -- name: GetGlobalTrainingById :one
-SELECT id, level
+SELECT id, level, title
 FROM global_training
 WHERE id = $1;
 

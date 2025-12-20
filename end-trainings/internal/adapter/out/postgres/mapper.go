@@ -71,8 +71,10 @@ func toDomainExercise(genExercises interface{}) []domain.Exercise {
 	if len(jsonBytes) > 0 && string(jsonBytes) != "[]" && string(jsonBytes) != "null" {
 		var rawExercises []struct {
 			ID          int64       `json:"id"`
+			Title       string      `json:"title"`
 			Description string      `json:"description"`
-			Href        string      `json:"href"`
+			VideoUrl    string      `json:"video_url"`
+			ImageUrl    string      `json:"image_url"`
 			Tags        interface{} `json:"tags"`
 		}
 		if err := json.Unmarshal(jsonBytes, &rawExercises); err == nil {
@@ -80,8 +82,10 @@ func toDomainExercise(genExercises interface{}) []domain.Exercise {
 			for i, ex := range rawExercises {
 				tags[i] = domain.Exercise{
 					ID:          ex.ID,
+					Title:       ex.Title,
 					Description: ex.Description,
-					Href:        ex.Href,
+					VideoUrl:    ex.VideoUrl,
+					ImageUrl:    ex.ImageUrl,
 					Tags:        toDomainTags(ex.Tags),
 				}
 			}

@@ -9,6 +9,7 @@ import (
 
 type Training struct {
 	ID                int64             `db:"id" json:"id"`
+	Title             string            `db:"title" json:"title"`
 	UserID            uuid.UUID         `db:"user_id" json:"user_id"`
 	IsDone            bool              `db:"is_done" json:"is_done"`
 	PlannedDate       time.Time         `db:"planned_date" json:"planned_date"`
@@ -44,8 +45,10 @@ type TrainedExercise struct {
 
 type Exercise struct {
 	ID          int64  `db:"id" json:"id"`
+	Title       string `db:"title" json:"title"`
 	Description string `db:"description" json:"description"`
-	Href        string `db:"href" json:"href"`
+	VideoUrl    string `db:"video_url" json:"video_url"`
+	ImageUrl    string `db:"image_url" json:"image_url"`
 	Tags        []Tag  `db:"tags" json:"tags"`
 }
 
@@ -66,7 +69,9 @@ type TrainingTime struct {
 }
 
 type GlobalTraining struct {
-	ID        int64      `json:"id"`
-	Level     string     `json:"level"`
-	Exercises []Exercise `json:"exercises"`
+	ID          int64      `json:"id"`
+	Title       string     `json:"title"`
+	Description string     `json:"description"`
+	Level       string     `json:"level"`
+	Exercises   []Exercise `json:"exercises"`
 }

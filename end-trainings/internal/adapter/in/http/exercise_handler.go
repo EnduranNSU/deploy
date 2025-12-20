@@ -196,7 +196,7 @@ func (h *ExerciseHandler) GetTagByID(c *gin.Context) {
 // @Failure      500  {object}  dto.ErrorResponse
 // @Router       /exercises/{id}/tags [get]
 func (h *ExerciseHandler) GetExerciseTags(c *gin.Context) {
-	exerciseID, err := parseInt64Param(c, "id")  // Используем "exercise_id"
+	exerciseID, err := parseInt64Param(c, "id") // Используем "exercise_id"
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid exercise id"})
 		return
@@ -306,8 +306,10 @@ func (h *ExerciseHandler) exerciseToResponse(exercise *svcexercise.Exercise) dto
 
 	return dto.ExerciseResponse{
 		ID:          exercise.ID,
+		Title:       exercise.Title,
 		Description: exercise.Description,
-		VideoURL:    &exercise.Href,
+		VideoURL:    &exercise.VideoUrl,
+		ImageURL:    &exercise.ImageUrl,
 		Tags:        tags,
 	}
 }

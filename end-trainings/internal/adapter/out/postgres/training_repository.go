@@ -73,6 +73,7 @@ func (r *TrainingRepositoryImpl) GetTrainingWithExercises(ctx context.Context, t
 
 func (r *TrainingRepositoryImpl) CreateTraining(ctx context.Context, training *domain.Training) (*domain.Training, error) {
 	params := gen.CreateTrainingParams{
+		Title:             training.Title,
 		UserID:            training.UserID,
 		IsDone:            training.IsDone,
 		PlannedDate:       training.PlannedDate,
@@ -131,6 +132,7 @@ func (r *TrainingRepositoryImpl) UpdateTraining(ctx context.Context, training *d
 		TotalExerciseTime: durationToNullInt64(training.TotalExerciseTime),
 		Rating:            null.Int32FromPtr(training.Rating).NullInt32,
 		ID:                training.ID,
+		Title:             training.Title,
 	}
 
 	updated, err := r.q.UpdateTraining(ctx, params)
@@ -329,6 +331,7 @@ func (r *TrainingRepositoryImpl) GetUserTrainingStats(ctx context.Context, userI
 func (r *TrainingRepositoryImpl) toDomainTraining(t gen.GetTrainingsByUserRow) *domain.Training {
 	return &domain.Training{
 		ID:                t.ID,
+		Title:             t.Title,
 		UserID:            t.UserID,
 		IsDone:            t.IsDone,
 		PlannedDate:       t.PlannedDate,
@@ -345,6 +348,7 @@ func (r *TrainingRepositoryImpl) toDomainTraining(t gen.GetTrainingsByUserRow) *
 func (r *TrainingRepositoryImpl) toDomainTrainingFromJoined(t gen.GetTrainingWithExercisesRow) *domain.Training {
 	training := &domain.Training{
 		ID:                t.ID,
+		Title:             t.Title,
 		UserID:            t.UserID,
 		IsDone:            t.IsDone,
 		PlannedDate:       t.PlannedDate,
@@ -458,6 +462,7 @@ func (r *TrainingRepositoryImpl) GetCurrentTraining(ctx context.Context, userID 
 
 	domainTraining := r.toDomainTraining(gen.GetTrainingsByUserRow{
 		ID:                t.ID,
+		Title:             t.Title,
 		UserID:            t.UserID,
 		IsDone:            t.IsDone,
 		PlannedDate:       t.PlannedDate,
@@ -494,6 +499,7 @@ func (r *TrainingRepositoryImpl) GetTodaysTraining(ctx context.Context, userID u
 	for i, t := range trainingRows {
 		trainings[i] = r.toDomainTraining(gen.GetTrainingsByUserRow{
 			ID:                t.ID,
+			Title:             t.Title,
 			UserID:            t.UserID,
 			IsDone:            t.IsDone,
 			PlannedDate:       t.PlannedDate,
@@ -526,7 +532,8 @@ func (r *TrainingRepositoryImpl) GetGlobalTrainings(ctx context.Context) ([]*dom
 	globalTrainings := make([]*domain.GlobalTraining, len(globalTrainingRows))
 	for i, gt := range globalTrainingRows {
 		globalTrainings[i] = r.toDomainGlobalTraining(GlobalTrainingRow{
-			ID:        gt.ID,
+			ID: gt.ID,
+
 			Level:     gt.Level,
 			Exercises: gt.Exercises,
 		})
@@ -609,6 +616,7 @@ func (r *TrainingRepositoryImpl) MarkTrainingAsDone(ctx context.Context, trainin
 
 	domainTraining := r.toDomainTraining(gen.GetTrainingsByUserRow{
 		ID:                updated.ID,
+		Title:             updated.Title,
 		UserID:            updated.UserID,
 		IsDone:            updated.IsDone,
 		PlannedDate:       updated.PlannedDate,
@@ -692,6 +700,7 @@ func (r *TrainingRepositoryImpl) StartTraining(ctx context.Context, trainingID i
 
 	domainTraining := r.toDomainTraining(gen.GetTrainingsByUserRow{
 		ID:                updated.ID,
+		Title:             updated.Title,
 		UserID:            updated.UserID,
 		IsDone:            updated.IsDone,
 		PlannedDate:       updated.PlannedDate,
@@ -776,16 +785,20 @@ func (r *TrainingRepositoryImpl) CalculateTrainingTotalTime(ctx context.Context,
 }
 
 type GlobalTrainingRow struct {
-	ID        int64       `json:"id"`
-	Level     string      `json:"level"`
-	Exercises interface{} `json:"exercises"`
+	ID          int64       `json:"id"`
+	Title       string      `json:"title"`
+	Description string      `json:"description"`
+	Level       string      `json:"level"`
+	Exercises   interface{} `json:"exercises"`
 }
 
 func (r *TrainingRepositoryImpl) toDomainGlobalTraining(gt GlobalTrainingRow) *domain.GlobalTraining {
 	return &domain.GlobalTraining{
-		ID:        gt.ID,
-		Level:     gt.Level,
-		Exercises: toDomainExercise(gt.Exercises),
+		ID:          gt.ID,
+		Title:       gt.Title,
+		Description: gt.Description,
+		Level:       gt.Level,
+		Exercises:   toDomainExercise(gt.Exercises),
 	}
 }
 
@@ -819,6 +832,7 @@ func (r *TrainingRepositoryImpl) AssignGlobalTrainingToUser(ctx context.Context,
 	// 2. Создаем тренировку для пользователя на указанную дату
 	trainingParams := gen.CreateTrainingParams{
 		UserID:      cmd.UserID,
+		Title:       globalTraining.Title,
 		IsDone:      false,
 		PlannedDate: cmd.PlannedDate,
 		// Если тренировка на сегодня, устанавливаем actual_date

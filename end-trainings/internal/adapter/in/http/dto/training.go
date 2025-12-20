@@ -3,6 +3,7 @@ package dto
 // CreateTrainingRequest представляет запрос на создание тренировки
 type CreateTrainingRequest struct {
 	UserID            string  `json:"user_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000" format:"uuid" description:"UUID пользователя"`
+	Title             string  `json:"title" binding:"required" example:"Жим жопой" description:"Название тренировки"`
 	IsDone            bool    `json:"is_done" example:"false" description:"Завершена ли тренировка"`
 	PlannedDate       string  `json:"planned_date" binding:"required" example:"2023-10-05T15:00:00Z" pattern:"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$" description:"Запланированная дата и время тренировки"`
 	ActualDate        *string `json:"actual_date,omitempty" example:"2023-10-05T16:30:00Z" pattern:"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$" description:"Фактическая дата и время выполнения тренировки (опционально)"`
@@ -16,6 +17,7 @@ type CreateTrainingRequest struct {
 
 // UpdateTrainingRequest представляет запрос на обновление тренировки
 type UpdateTrainingRequest struct {
+	Title             string  `json:"title" binding:"required" example:"Жим жопой" description:"Название тренировки"`
 	IsDone            *bool   `json:"is_done,omitempty" example:"true" description:"Завершена ли тренировка (опционально)"`
 	PlannedDate       string  `json:"planned_date" binding:"required" example:"2023-10-05T15:00:00Z" pattern:"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$" description:"Запланированная дата и время тренировки"`
 	ActualDate        *string `json:"actual_date,omitempty" example:"2023-10-05T16:30:00Z" pattern:"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$" description:"Фактическая дата и время выполнения тренировки (опционально)"`
@@ -54,6 +56,7 @@ type UpdateTrainedExerciseRequest struct {
 // TrainingResponse представляет ответ с информацией о тренировке
 type TrainingResponse struct {
 	ID                int64                     `json:"id" example:"1" description:"ID тренировки"`
+	Title             string                    `json:"title" example:"Жим жопой" description:"Название тренировки"`
 	UserID            string                    `json:"user_id" example:"550e8400-e29b-41d4-a716-446655440000" description:"UUID пользователя"`
 	IsDone            bool                      `json:"is_done" example:"true" description:"Завершена ли тренировка"`
 	PlannedDate       string                    `json:"planned_date" example:"2023-10-05T15:00:00Z" description:"Запланированная дата и время"`
@@ -122,15 +125,19 @@ type TrainingTimeResponse struct {
 // GlobalTrainingResponse представляет ответ с информацией о глобальной тренировке
 type GlobalTrainingResponse struct {
 	ID          int64              `json:"id" example:"1" description:"ID глобальной тренировки"`
+	Title       string             `json:"title" example:"Жим жопой" description:"Название тренировки"`
+	Description string             `json:"description" example:"Эта тренировка направлена на ..." description:"Описание тренировки"`
 	Level       string             `json:"level" example:"beginner" description:"Уровень сложности"`
 	Exercises   []ExerciseResponse `json:"exercises" description:"Упражнения в тренировке"`
 }
 
 // GlobalTrainingWithTagsResponse представляет ответ с информацией о глобальной тренировке с тегами
 type GlobalTrainingWithTagsResponse struct {
-	ID          int64                         `json:"id" example:"1" description:"ID глобальной тренировки"`
-	Level       string                        `json:"level" example:"beginner" description:"Уровень сложности"`
-	Exercises   []ExerciseWithTagsResponse `json:"exercises" description:"Упражнения в тренировке с тегами"`
+	ID        int64                      `json:"id" example:"1" description:"ID глобальной тренировки"`
+	Title       string             `json:"title" example:"Жим жопой" description:"Название тренировки"`
+	Description string             `json:"description" example:"Эта тренировка направлена на ..." description:"Описание тренировки"`
+	Level       string             `json:"level" example:"beginner" description:"Уровень сложности"`
+	Exercises []ExerciseWithTagsResponse `json:"exercises" description:"Упражнения в тренировке с тегами"`
 }
 
 // ExerciseWithTagsResponse представляет ответ с информацией об упражнении с тегами
@@ -138,6 +145,7 @@ type ExerciseWithTagsResponse struct {
 	ID          int64         `json:"id" example:"1" description:"ID упражнения"`
 	Description string        `json:"description" example:"Базовое упражнение для развития грудных мышц" description:"Описание упражнения"`
 	VideoURL    *string       `json:"video_url,omitempty" example:"https://example.com/video.mp4" description:"Ссылка на видео с техникой выполнения"`
+	ImageURL    *string       `json:"image_url,omitempty" example:"https://example.com/video.mp4" description:"Ссылка на картинку"`
 	Tags        []TagResponse `json:"tags" description:"Теги упражнения"`
 }
 

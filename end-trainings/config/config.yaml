@@ -5,7 +5,7 @@ db:
   host: postgres
   port: 5432
 logger:
-  level: debug
+  level: info
   console:
     enable: true
     encoding: json
