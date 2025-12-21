@@ -29,7 +29,6 @@ func (r *ExerciseRepositoryImpl) GetExercisesWithTags(ctx context.Context) ([]*d
 		logging.Error(err, "GetExercisesWithTags", nil, "failed to get exercises with tags")
 		return nil, err
 	}
-
 	result := make([]*domain.Exercise, len(exercises))
 	for i, e := range exercises {
 		result[i] = r.toDomainExercise(e)
@@ -87,8 +86,8 @@ func (r *ExerciseRepositoryImpl) GetExercisesByTag(ctx context.Context, tagID in
 		result[i] = &domain.Exercise{
 			ID:          e.ID,
 			Description: e.Description,
-			VideoUrl: e.VideoUrl,
-			ImageUrl: e.ImageUrl,
+			VideoUrl:    e.VideoUrl,
+			ImageUrl:    e.ImageUrl,
 		}
 	}
 
@@ -228,6 +227,7 @@ func (r *ExerciseRepositoryImpl) GetExerciseTags(ctx context.Context, exerciseID
 func (r *ExerciseRepositoryImpl) toDomainExercise(e gen.GetExercisesWithTagsRow) *domain.Exercise {
 	return &domain.Exercise{
 		ID:          e.ID,
+		Title:       e.Title,
 		Description: e.Description,
 		VideoUrl:    e.VideoUrl,
 		ImageUrl:    e.ImageUrl,
@@ -238,6 +238,7 @@ func (r *ExerciseRepositoryImpl) toDomainExercise(e gen.GetExercisesWithTagsRow)
 func (r *ExerciseRepositoryImpl) toDomainExerciseFromJoined(e gen.GetExerciseByIDRow) *domain.Exercise {
 	return &domain.Exercise{
 		ID:          e.ID,
+		Title:       e.Title,
 		Description: e.Description,
 		VideoUrl:    e.VideoUrl,
 		ImageUrl:    e.ImageUrl,

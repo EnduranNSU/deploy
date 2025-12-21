@@ -2,7 +2,9 @@ package postgres
 
 import (
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
+	"fmt"
 
 	"github.com/EnduranNSU/trainings/internal/domain"
 	"github.com/shopspring/decimal"
@@ -102,12 +104,24 @@ func toDomainTrainedExercise(genExercises interface{}) []domain.TrainedExercise 
 	case []byte:
 		jsonBytes = v
 	case string:
-		jsonBytes = []byte(v)
+		// Try to decode Base64 first
+		if decoded, err := base64.StdEncoding.DecodeString(v); err == nil {
+			jsonBytes = decoded
+		} else {
+			// If not Base64, treat as regular string
+			jsonBytes = []byte(v)
+		}
 	case json.RawMessage:
 		jsonBytes = []byte(v)
 	case sql.NullString:
 		if v.Valid {
-			jsonBytes = []byte(v.String)
+			// Try to decode Base64 first
+			if decoded, err := base64.StdEncoding.DecodeString(v.String); err == nil {
+				jsonBytes = decoded
+			} else {
+				// If not Base64, treat as regular string
+				jsonBytes = []byte(v.String)
+			}
 		}
 	default:
 		if b, err := json.Marshal(v); err == nil {
@@ -117,34 +131,64 @@ func toDomainTrainedExercise(genExercises interface{}) []domain.TrainedExercise 
 
 	if len(jsonBytes) > 0 && string(jsonBytes) != "[]" && string(jsonBytes) != "null" {
 		var rawExercises []struct {
-			ID         int64          `json:"id"`
-			TrainingID int64          `json:"training_id"`
-			ExerciseID int64          `json:"exercise_id"`
-			Weight     sql.NullString `json:"weight"`
-			Approaches sql.NullInt32  `json:"approaches"`
-			Reps       sql.NullInt32  `json:"reps"`
-			Time       int64          `json:"time"`
-			Doing      int64          `json:"doing"`
-			Rest       int64          `json:"rest"`
-			Notes      sql.NullString `json:"notes"`
+			ID         int64       `json:"id"`
+			TrainingID int64       `json:"training_id"`
+			ExerciseID int64       `json:"exercise_id"`
+			Weight     interface{} `json:"weight"` // Use interface{} to handle both string and number
+			Approaches int32       `json:"approaches"`
+			Reps       int32       `json:"reps"`
+			Time       int64       `json:"time"`
+			Doing      int64       `json:"doing"`
+			Rest       int64       `json:"rest"`
+			Notes      string      `json:"notes"`
 		}
 		if err := json.Unmarshal(jsonBytes, &rawExercises); err == nil {
 			tags = make([]domain.TrainedExercise, len(rawExercises))
 			for i, ex := range rawExercises {
-				weight, _ := decimal.NewFromString(ex.Weight.String)
+				var weightPtr *decimal.Decimal
+
+				// Handle weight field which can be string, number, or null
+				if ex.Weight != nil {
+					switch w := ex.Weight.(type) {
+					case string:
+						if w != "" {
+							weight, err := decimal.NewFromString(w)
+							if err == nil {
+								weightPtr = &weight
+							}
+						}
+					case float64:
+						weight := decimal.NewFromFloat(w)
+						weightPtr = &weight
+					case int64:
+						weight := decimal.NewFromInt(w)
+						weightPtr = &weight
+					case int:
+						weight := decimal.NewFromInt(int64(w))
+						weightPtr = &weight
+					case float32:
+						weight := decimal.NewFromFloat32(w)
+						weightPtr = &weight
+					}
+				}
+
 				tags[i] = domain.TrainedExercise{
 					ID:         ex.ID,
 					TrainingID: ex.TrainingID,
 					ExerciseID: ex.ExerciseID,
-					Weight:     &weight,
-					Approaches: nullIntFromSQL32(ex.Approaches),
-					Reps:       nullIntFromSQL32(ex.Reps),
+					Weight:     weightPtr,
+					Approaches: &ex.Approaches,
+					Reps:       &ex.Reps,
 					Time:       toDuration(ex.Time),
 					Doing:      toDuration(ex.Doing),
 					Rest:       toDuration(ex.Rest),
-					Notes:      nullStringFromSQL(ex.Notes),
+					Notes:      &ex.Notes,
 				}
 			}
+		} else {
+			// Log the error for debugging
+			fmt.Printf("Failed to unmarshal exercises JSON: %v\n", err)
+			fmt.Printf("JSON data: %s\n", string(jsonBytes))
 		}
 	}
 	return tags

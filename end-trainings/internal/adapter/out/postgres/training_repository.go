@@ -59,12 +59,18 @@ func (r *TrainingRepositoryImpl) GetTrainingWithExercises(ctx context.Context, t
 		logging.Error(err, "GetTrainingWithExercises", jsonData, "failed to get training with exercises")
 		return nil, err
 	}
+	jsonData := logging.MarshalLogData(map[string]interface{}{
+		"result": training,
+	})
+	logging.Debug("GetTrainingWithExercises", jsonData, "successfully retrieved training with exercises")
+
 
 	domainTraining := r.toDomainTrainingFromJoined(training)
 
-	jsonData := logging.MarshalLogData(map[string]interface{}{
+	jsonData = logging.MarshalLogData(map[string]interface{}{
 		"training_id":     trainingID,
 		"exercises_count": len(domainTraining.Exercises),
+		"result": domainTraining,
 	})
 	logging.Debug("GetTrainingWithExercises", jsonData, "successfully retrieved training with exercises")
 
@@ -532,10 +538,11 @@ func (r *TrainingRepositoryImpl) GetGlobalTrainings(ctx context.Context) ([]*dom
 	globalTrainings := make([]*domain.GlobalTraining, len(globalTrainingRows))
 	for i, gt := range globalTrainingRows {
 		globalTrainings[i] = r.toDomainGlobalTraining(GlobalTrainingRow{
-			ID: gt.ID,
-
-			Level:     gt.Level,
-			Exercises: gt.Exercises,
+			ID:          gt.ID,
+			Title:       gt.Title,
+			Description: gt.Description,
+			Level:       gt.Level,
+			Exercises:   gt.Exercises,
 		})
 	}
 
@@ -555,9 +562,11 @@ func (r *TrainingRepositoryImpl) GetGlobalTrainingById(ctx context.Context, trai
 	}
 
 	globalTraining := r.toDomainGlobalTraining(GlobalTrainingRow{
-		ID:        gt.ID,
-		Level:     gt.Level,
-		Exercises: gt.Exercises,
+		ID:          gt.ID,
+		Title:       gt.Title,
+		Description: gt.Description,
+		Level:       gt.Level,
+		Exercises:   gt.Exercises,
 	})
 
 	jsonData := logging.MarshalLogData(map[string]interface{}{
@@ -583,9 +592,11 @@ func (r *TrainingRepositoryImpl) GetGlobalTrainingByLevel(ctx context.Context, l
 	globalTrainings := make([]*domain.GlobalTraining, len(globalTrainingRows))
 	for i, gt := range globalTrainingRows {
 		globalTrainings[i] = r.toDomainGlobalTraining(GlobalTrainingRow{
-			ID:        gt.ID,
-			Level:     gt.Level,
-			Exercises: gt.Exercises,
+			ID:          gt.ID,
+			Title:       gt.Title,
+			Description: gt.Description,
+			Level:       gt.Level,
+			Exercises:   gt.Exercises,
 		})
 	}
 	jsonData := logging.MarshalLogData(map[string]interface{}{

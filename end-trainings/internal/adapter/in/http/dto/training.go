@@ -70,6 +70,21 @@ type TrainingResponse struct {
 	Exercises         []TrainedExerciseResponse `json:"exercises,omitempty" description:"Упражнения в тренировке"`
 }
 
+type UserTrainingsResponse struct {
+	ID                int64                     `json:"id" example:"1" description:"ID тренировки"`
+	Title             string                    `json:"title" example:"Жим жопой" description:"Название тренировки"`
+	UserID            string                    `json:"user_id" example:"550e8400-e29b-41d4-a716-446655440000" description:"UUID пользователя"`
+	IsDone            bool                      `json:"is_done" example:"true" description:"Завершена ли тренировка"`
+	PlannedDate       string                    `json:"planned_date" example:"2023-10-05T15:00:00Z" description:"Запланированная дата и время"`
+	ActualDate        *string                   `json:"actual_date,omitempty" example:"2023-10-05T16:30:00Z" description:"Фактическая дата и время выполнения"`
+	StartedAt         *string                   `json:"started_at,omitempty" example:"2023-10-05T15:00:00Z" description:"Время начала тренировки"`
+	FinishedAt        *string                   `json:"finished_at,omitempty" example:"2023-10-05T16:30:00Z" description:"Время окончания тренировки"`
+	TotalDuration     *string                   `json:"total_duration,omitempty" example:"1h30m" description:"Общее время тренировки"`
+	TotalRestTime     *string                   `json:"total_rest_time,omitempty" example:"30m" description:"Общее время отдыха"`
+	TotalExerciseTime *string                   `json:"total_exercise_time,omitempty" example:"1h" description:"Общее время выполнения упражнений"`
+	Rating            *int32                    `json:"rating,omitempty" example:"5" description:"Оценка тренировки"`
+}
+
 // TrainedExerciseResponse представляет ответ с информацией о выполненном упражнении
 type TrainedExerciseResponse struct {
 	ID         int64    `json:"id" example:"1" description:"ID выполненного упражнения"`
@@ -133,16 +148,17 @@ type GlobalTrainingResponse struct {
 
 // GlobalTrainingWithTagsResponse представляет ответ с информацией о глобальной тренировке с тегами
 type GlobalTrainingWithTagsResponse struct {
-	ID        int64                      `json:"id" example:"1" description:"ID глобальной тренировки"`
-	Title       string             `json:"title" example:"Жим жопой" description:"Название тренировки"`
-	Description string             `json:"description" example:"Эта тренировка направлена на ..." description:"Описание тренировки"`
-	Level       string             `json:"level" example:"beginner" description:"Уровень сложности"`
-	Exercises []ExerciseWithTagsResponse `json:"exercises" description:"Упражнения в тренировке с тегами"`
+	ID          int64                      `json:"id" example:"1" description:"ID глобальной тренировки"`
+	Title       string                     `json:"title" example:"Жим жопой" description:"Название тренировки"`
+	Description string                     `json:"description" example:"Эта тренировка направлена на ..." description:"Описание тренировки"`
+	Level       string                     `json:"level" example:"beginner" description:"Уровень сложности"`
+	Exercises   []ExerciseWithTagsResponse `json:"exercises" description:"Упражнения в тренировке с тегами"`
 }
 
 // ExerciseWithTagsResponse представляет ответ с информацией об упражнении с тегами
 type ExerciseWithTagsResponse struct {
 	ID          int64         `json:"id" example:"1" description:"ID упражнения"`
+	Title       string        `json:"title" example:"Жим жопой" description:"Название упражнения"`
 	Description string        `json:"description" example:"Базовое упражнение для развития грудных мышц" description:"Описание упражнения"`
 	VideoURL    *string       `json:"video_url,omitempty" example:"https://example.com/video.mp4" description:"Ссылка на видео с техникой выполнения"`
 	ImageURL    *string       `json:"image_url,omitempty" example:"https://example.com/video.mp4" description:"Ссылка на картинку"`

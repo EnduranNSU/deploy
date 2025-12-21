@@ -27,7 +27,7 @@ func NewTrainingHandler(svc svctraining.TrainingService) *TrainingHandler {
 // @Tags         trainings
 // @Produce      json
 // @Param        user_id query string true "User ID"
-// @Success      200  {array}   dto.TrainingResponse
+// @Success      200  {array}   dto.UserTrainingsResponse
 // @Failure      400  {object}  dto.ErrorResponse
 // @Failure      404  {object}  dto.ErrorResponse
 // @Failure      500  {object}  dto.ErrorResponse
@@ -47,13 +47,13 @@ func (h *TrainingHandler) GetTrainingsByUser(c *gin.Context) {
 	}
 
 	if len(trainings) == 0 {
-		c.JSON(http.StatusOK, []dto.TrainingResponse{})
+		c.JSON(http.StatusOK, []dto.UserTrainingsResponse{})
 		return
 	}
 
-	resp := make([]dto.TrainingResponse, 0, len(trainings))
+	resp := make([]dto.UserTrainingsResponse, 0, len(trainings))
 	for _, training := range trainings {
-		resp = append(resp, h.trainingToResponse(training))
+		resp = append(resp, h.userTrainingToResponse(training))
 	}
 
 	c.JSON(http.StatusOK, resp)
@@ -606,6 +606,50 @@ func (h *TrainingHandler) CompleteTraining(c *gin.Context) {
 }
 
 // Вспомогательные методы
+func (h *TrainingHandler) userTrainingToResponse(training *svctraining.Training) dto.UserTrainingsResponse {
+	var actualDate, startedAt, finishedAt *string
+	if training.ActualDate != nil {
+		s := training.ActualDate.Format(time.RFC3339)
+		actualDate = &s
+	}
+	if training.StartedAt != nil {
+		s := training.StartedAt.Format(time.RFC3339)
+		startedAt = &s
+	}
+	if training.FinishedAt != nil {
+		s := training.FinishedAt.Format(time.RFC3339)
+		finishedAt = &s
+	}
+
+	var totalDuration, totalRestTime, totalExerciseTime *string
+	if training.TotalDuration != nil {
+		s := formatDuration(*training.TotalDuration)
+		totalDuration = &s
+	}
+	if training.TotalRestTime != nil {
+		s := formatDuration(*training.TotalRestTime)
+		totalRestTime = &s
+	}
+	if training.TotalExerciseTime != nil {
+		s := formatDuration(*training.TotalExerciseTime)
+		totalExerciseTime = &s
+	}
+
+	return dto.UserTrainingsResponse{
+		ID:                training.ID,
+		Title:             training.Title,
+		UserID:            training.UserID.String(),
+		IsDone:            training.IsDone,
+		PlannedDate:       training.PlannedDate.Format(time.RFC3339),
+		ActualDate:        actualDate,
+		StartedAt:         startedAt,
+		FinishedAt:        finishedAt,
+		TotalDuration:     totalDuration,
+		TotalRestTime:     totalRestTime,
+		TotalExerciseTime: totalExerciseTime,
+		Rating:            training.Rating,
+	}
+}
 
 func (h *TrainingHandler) trainingToResponse(training *svctraining.Training) dto.TrainingResponse {
 	var actualDate, startedAt, finishedAt *string
@@ -1361,6 +1405,7 @@ func (h *TrainingHandler) globalTrainingWithTagsToResponse(gt *svctraining.Globa
 
 			exercises = append(exercises, dto.ExerciseWithTagsResponse{
 				ID:          exercise.ID,
+				Title:       exercise.Title,
 				Description: exercise.Description,
 				VideoURL:    &exercise.VideoUrl,
 				ImageURL:    &exercise.ImageUrl,

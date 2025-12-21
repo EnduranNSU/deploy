@@ -67,37 +67,6 @@ func (h *ExerciseHandler) GetExerciseByID(c *gin.Context) {
 	c.JSON(http.StatusOK, h.exerciseToResponse(exercise))
 }
 
-// GetExercisesByTag получает упражнения по тегу
-// @Summary      Получить упражнения по тегу
-// @Description  Возвращает список упражнений, связанных с указанным тегом
-// @Tags         exercises
-// @Produce      json
-// @Param        tag_id path int64 true "Tag ID"
-// @Success      200  {array}   dto.ExerciseResponse
-// @Failure      400  {object}  dto.ErrorResponse
-// @Failure      500  {object}  dto.ErrorResponse
-// @Router       /exercises/tag/{tag_id} [get]
-func (h *ExerciseHandler) GetExercisesByTag(c *gin.Context) {
-	tagID, err := parseInt64Param(c, "tag_id")
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid tag id"})
-		return
-	}
-
-	exercises, err := h.svc.GetExercisesByTag(c.Request.Context(), tagID)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "failed to get exercises by tag"})
-		return
-	}
-
-	resp := make([]dto.ExerciseResponse, 0, len(exercises))
-	for _, exercise := range exercises {
-		resp = append(resp, h.exerciseToResponse(exercise))
-	}
-
-	c.JSON(http.StatusOK, resp)
-}
-
 // SearchExercises ищет упражнения
 // @Summary      Поиск упражнений
 // @Description  Возвращает список упражнений, соответствующих поисковому запросу и фильтрам

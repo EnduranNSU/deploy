@@ -202,6 +202,7 @@ SELECT
         json_agg(
             json_build_object(
                 'id', te.id,
+                'training_id', te.training_id, 
                 'exercise_id', te.exercise_id,
                 'weight', te.weight,
                 'approaches', te.approaches,
@@ -302,6 +303,7 @@ SELECT
         json_agg(
             json_build_object(
                 'id', te.id,
+                'training_id', te.training_id, 
                 'exercise_id', te.exercise_id,
                 'weight', te.weight,
                 'approaches', te.approaches,
@@ -342,6 +344,7 @@ SELECT
         json_agg(
             json_build_object(
                 'id', te.id,
+                'training_id', te.training_id, 
                 'exercise_id', te.exercise_id,
                 'weight', te.weight,
                 'approaches', te.approaches,
