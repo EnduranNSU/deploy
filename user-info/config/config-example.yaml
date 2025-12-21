@@ -16,3 +16,5 @@ logger:
     maxsize:
 http:
   addr: ":8080" 
+auth:
+  base_url: "http://localhost:8080"

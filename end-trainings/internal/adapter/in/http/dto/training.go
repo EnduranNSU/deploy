@@ -2,8 +2,8 @@ package dto
 
 // CreateTrainingRequest представляет запрос на создание тренировки
 type CreateTrainingRequest struct {
-	UserID            string  `json:"user_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000" format:"uuid" description:"UUID пользователя"`
 	Title             string  `json:"title" binding:"required" example:"Жим жопой" description:"Название тренировки"`
+	UserID            string  `json:"user_id,omitempty" binding:"omitempty,uuid" example:"550e8400-e29b-41d4-a716-446655440000" format:"uuid" description:"(Игнорируется) UUID пользователя берётся из access_token"`
 	IsDone            bool    `json:"is_done" example:"false" description:"Завершена ли тренировка"`
 	PlannedDate       string  `json:"planned_date" binding:"required" example:"2023-10-05T15:00:00Z" pattern:"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$" description:"Запланированная дата и время тренировки"`
 	ActualDate        *string `json:"actual_date,omitempty" example:"2023-10-05T16:30:00Z" pattern:"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$" description:"Фактическая дата и время выполнения тренировки (опционально)"`
@@ -177,13 +177,14 @@ type UpdateExerciseDoingTimeRequest struct {
 
 // CopyGlobalTrainingRequest представляет запрос на копирование глобальной тренировки
 type CopyGlobalTrainingRequest struct {
-	UserID      string `json:"user_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000" description:"UUID пользователя"`
+	UserID      string `json:"user_id,omitempty" binding:"omitempty,uuid" example:"550e8400-e29b-41d4-a716-446655440000" description:"(Игнорируется) UUID пользователя берётся из access_token"`
 	PlannedDate string `json:"planned_date" binding:"required" example:"2023-10-05T15:00:00Z" description:"Запланированная дата тренировки"`
 }
 
 // AssignGlobalTrainingRequest представляет запрос на назначение глобальной тренировки
 type AssignGlobalTrainingRequest struct {
-	UserID           string `json:"user_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000" description:"UUID пользователя"`
+	UserID           string `json:"user_id,omitempty" binding:"omitempty,uuid" example:"550e8400-e29b-41d4-a716-446655440000" description:"(Игнорируется) UUID пользователя берётся из access_token"`
 	GlobalTrainingID int64  `json:"global_training_id" binding:"required" example:"1" description:"ID глобальной тренировки"`
 	PlannedDate      string `json:"planned_date" binding:"required" example:"2023-10-05T15:00:00Z" description:"Запланированная дата тренировки"`
 }
+

@@ -14,17 +14,22 @@ import (
 )
 
 type Server struct {
-	Svc  svcuserinfo.Service
-	Addr string
+	Svc         svcuserinfo.Service
+	Addr        string
+	AuthBaseURL string
 }
 
-func SetupServer(svc svcuserinfo.Service, addr string) *Server {
-	return &Server{Svc: svc, Addr: addr}
+func SetupServer(svc svcuserinfo.Service, addr, authBaseURL string) *Server {
+	return &Server{
+		Svc:         svc,
+		Addr:        addr,
+		AuthBaseURL: authBaseURL,
+	}
 }
 
 func (s *Server) StartServer() error {
 	h := httpin.NewUserInfoHandler(s.Svc)
-	engine := httpin.NewGinRouter(h)
+	engine := httpin.NewGinRouter(h, s.AuthBaseURL)
 
 	srv := &http.Server{
 		Addr:              s.Addr,

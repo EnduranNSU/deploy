@@ -3,7 +3,6 @@ package app
 import (
 	"strings"
 
-	"auth/internal/logging"
 	"auth/internal/service"
 
 	"auth/internal/utils/env"
@@ -24,7 +23,7 @@ func GetConfigName() string {
 type Config struct {
 	HTTP   HTTPConfig     `mapstructure:"http"`
 	DB     DBConfig       `mapstructure:"db"`
-	Logger logging.Config `mapstructure:"logger"`
+	Logger LoggerConfig `mapstructure:"logger"`
 	Svc    service.Config `mapstructure:"svc"`
 }
 
@@ -34,4 +33,39 @@ type HTTPConfig struct {
 
 type DBConfig struct {
 	DSN string `mapstructure:"dsn" default:"postgres://postgres:postgres@localhost:5432/auth?sslmode=disable"`
+}
+
+
+type LogEncoding string
+
+const (
+	LogLevelDebug = LogLevel("debug")
+	LogLevelInfo  = LogLevel("info")
+	LogLevelWarn  = LogLevel("warning")
+	LogLevelError = LogLevel("error")
+)
+
+type LogLevel string
+
+const (
+	LogEncodingText = LogEncoding("text")
+	LogEncodingJSON = LogEncoding("json")
+)
+
+type LoggerConfig struct {
+	Level   string `default:"info" validate:"oneof=debug info warning error"`
+	Console ConsoleLoggerConfig
+	File    FileLoggerConfig
+}
+
+type ConsoleLoggerConfig struct {
+	Enable   bool   `default:"true"`
+	Encoding string `default:"text" validate:"required_with=Enable,oneof=text json"`
+}
+
+type FileLoggerConfig struct {
+	Enable  bool   `default:"false"`
+	DirPath string `default:"logs" validate:"required_with=Enable"`
+	MaxSize int    `default:"100" validate:"required_with=Enable,min=0"`
+	MaxAge  int    `default:"30" validate:"required_with=Enable,min=0"`
 }

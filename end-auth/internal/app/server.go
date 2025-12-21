@@ -11,7 +11,6 @@ import (
 
 	httpin "auth/internal/adapter/in/http"
 	"auth/internal/adapter/out/postgres"
-	"auth/internal/logging"
 	"auth/internal/service"
 
 	_ "github.com/lib/pq"
@@ -24,7 +23,6 @@ type Server struct {
 }
 
 func BuildServer(cfg Config) (*Server, error) {
-	logging.SetupLogger(cfg.Logger)
 
 	db, err := sql.Open("postgres", cfg.DB.DSN)
 	if err != nil {

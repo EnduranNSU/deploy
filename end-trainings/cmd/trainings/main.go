@@ -32,6 +32,14 @@ func init() {
 	)
 }
 
+// @title           Enduran Training API
+// @version         1.0
+// @description     Сервис информации о тренировках и упражнения
+// @BasePath        /api/v1
+// @schemes         http
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 	// Load config
 	var cfg app.Config
@@ -40,7 +48,7 @@ func main() {
 	err := config.NewConfReader(configName).WithPrefix("APP").Read(&cfg)
 	if err != nil {
 		log.Fatal().Stack().Err(err).
-		Str("service", "trainings").Msg("failed to load config")
+			Str("service", "trainings").Msg("failed to load config")
 	}
 
 	// Setup logger
@@ -53,7 +61,7 @@ func main() {
 			cfg.Db.User, cfg.Db.Password, cfg.Db.Dbname, cfg.Db.Host, cfg.Db.Port))
 	if err != nil {
 		log.Fatal().Stack().Err(err).
-		Str("service", "trainings").Msgf("Failed to connect to database: %v", err)
+			Str("service", "trainings").Msgf("Failed to connect to database: %v", err)
 	}
 	defer db.Close()
 
@@ -62,7 +70,7 @@ func main() {
 	defer cancel()
 	if err := db.PingContext(ctx); err != nil {
 		log.Fatal().Stack().Err(err).
-		Str("service", "trainings").Msgf("Failed to ping database: %v", err)
+			Str("service", "trainings").Msgf("Failed to ping database: %v", err)
 	}
 
 	// Init repo - теперь без возврата ошибки
@@ -72,11 +80,11 @@ func main() {
 	tsvc := svc.NewTrainingService(trepo)
 	esvc := svc.NewExerciseService(erepo)
 
-	srv := app.SetupServer(tsvc, esvc, cfg.Http.Addr)
-	
+	srv := app.SetupServer(tsvc, esvc, cfg.Http.Addr, cfg.Auth.BaseURL)
+
 	if err := srv.StartServer(); err != nil {
 		log.Fatal().Err(err).
-		Str("service", "trainings").Msg("http server stopped")
+			Str("service", "trainings").Msg("http server stopped")
 	}
 }
 

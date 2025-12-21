@@ -39,7 +39,7 @@ func main() {
 		log.Fatal().Stack().Err(err).Msg("failed to load config")
 	}
 
-	logging.SetupLogger(cfg.Logger)
+	logging.SetupLogger(toLoggerConfig(cfg.Logger))
 
 	srv, err := app.BuildServer(cfg)
 	if err != nil {
@@ -48,5 +48,23 @@ func main() {
 
 	if err := srv.Start(); err != nil {
 		log.Fatal().Err(err).Msg("http server stopped")
+	}
+}
+
+
+
+func toLoggerConfig(cfg app.LoggerConfig) logging.Config {
+	return logging.Config{
+		Level: cfg.Level,
+		Console: logging.ConsoleLoggerConfig{
+			Enable:   cfg.Console.Enable,
+			Encoding: cfg.Console.Encoding,
+		},
+		File: logging.FileLoggerConfig{
+			Enable:  cfg.File.Enable,
+			DirPath: cfg.File.DirPath,
+			MaxSize: cfg.File.MaxSize,
+			MaxAge:  cfg.File.MaxAge,
+		},
 	}
 }

@@ -18,7 +18,7 @@ import (
 // @version 1.0
 // @description Сервис информации о пользователе (вес, рост, возраст и т.д.)
 // @BasePath /api/v1
-func NewGinRouter(h *UserInfoHandler) *gin.Engine {
+func NewGinRouter(h *UserInfoHandler, authBaseURL string) *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Logger(), gin.Recovery())
 
@@ -26,43 +26,15 @@ func NewGinRouter(h *UserInfoHandler) *gin.Engine {
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	authMW := NewAuthMiddleware(authBaseURL)
+
 	api := r.Group("/api/v1")
+	api.Use(authMW.Handle)
 	{
-		// CreateUserInfo godoc
-		// @Summary Создать пользовательскую информацию
-		// @Description Создает новую запись с информацией о пользователе (вес, рост, возраст)
-		// @Tags user-info
-		// @Accept json
-		// @Produce json
-		// @Param request body dto.CreateUserInfoRequest true "Данные пользователя"
-		// @Success 200 {object} dto.UserInfoResponse
-		// @Failure 400 {object} dto.ErrorResponse
-		// @Failure 500 {object} dto.ErrorResponse
-		// @Router /user-info [post]
 		api.POST("/user-info", h.Create)
 
-		// GetLatestUserInfo godoc
-		// @Summary Получить последнюю запись
-		// @Description Возвращает последнюю запись информации о пользователе
-		// @Tags user-info
-		// @Produce json
-		// @Param user_id query string true "User ID"
-		// @Success 200 {object} dto.UserInfoResponse
-		// @Failure 400 {object} dto.ErrorResponse
-		// @Failure 404 {object} dto.ErrorResponse
-		// @Router /user-info/latest [get]
 		api.GET("/user-info/latest", h.GetLatest)
 
-		// ListUserInfo godoc
-		// @Summary Получить все записи
-		// @Description Возвращает все записи информации о пользователе
-		// @Tags user-info
-		// @Produce json
-		// @Param user_id query string true "User ID"
-		// @Success 200 {array} dto.UserInfoResponse
-		// @Failure 400 {object} dto.ErrorResponse
-		// @Failure 404 {object} dto.ErrorResponse
-		// @Router /user-info [get]
 		api.GET("/user-info", h.List)
 	}
 

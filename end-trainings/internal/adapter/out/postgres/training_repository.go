@@ -376,14 +376,12 @@ func (r *TrainingRepositoryImpl) UpdateExerciseTime(ctx context.Context, exercis
 		Rest:       durationToNullInt64(exercise.Rest),
 		Time:       durationToNullInt64(exercise.Time),
 		ID:         exercise.ID,
-		TrainingID: exercise.TrainingID,
 	}
 
 	updated, err := r.q.UpdateExerciseTime(ctx, params)
 	if err != nil {
 		jsonData := logging.MarshalLogData(map[string]interface{}{
 			"trained_exercise_id": exercise.ID,
-			"training_id":         exercise.TrainingID,
 		})
 		logging.Error(err, "UpdateExerciseTime", jsonData, "failed to update exercise time")
 		return nil, err

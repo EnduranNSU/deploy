@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 
 	"github.com/EnduranNSU/trainings/internal/adapter/in/http/dto"
@@ -33,10 +32,8 @@ func NewTrainingHandler(svc svctraining.TrainingService) *TrainingHandler {
 // @Failure      500  {object}  dto.ErrorResponse
 // @Router       /trainings [get]
 func (h *TrainingHandler) GetTrainingsByUser(c *gin.Context) {
-	uidStr := c.Query("user_id")
-	uid, err := uuid.Parse(uidStr)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid user_id"})
+	uid, ok := userIDFromContext(c)
+	if !ok {
 		return
 	}
 
@@ -104,9 +101,8 @@ func (h *TrainingHandler) CreateTraining(c *gin.Context) {
 		return
 	}
 
-	uid, err := uuid.Parse(req.UserID)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid user_id"})
+	uid, ok := userIDFromContext(c)
+	if !ok {
 		return
 	}
 
@@ -540,17 +536,14 @@ func (h *TrainingHandler) RemoveExerciseFromTraining(c *gin.Context) {
 // @Description  Возвращает статистику тренировок пользователя
 // @Tags         trainings
 // @Produce      json
-// @Param        user_id query string true "User ID"
 // @Success      200  {object}  dto.TrainingStatsResponse
 // @Failure      400  {object}  dto.ErrorResponse
 // @Failure      404  {object}  dto.ErrorResponse
 // @Failure      500  {object}  dto.ErrorResponse
 // @Router       /trainings/stats [get]
 func (h *TrainingHandler) GetUserTrainingStats(c *gin.Context) {
-	uidStr := c.Query("user_id")
-	uid, err := uuid.Parse(uidStr)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid user_id"})
+	uid, ok := userIDFromContext(c)
+	if !ok {
 		return
 	}
 
@@ -932,7 +925,6 @@ func (h *TrainingHandler) CalculateTrainingTotalTime(c *gin.Context) {
 // @Description  Возвращает активную тренировку пользователя (если есть)
 // @Tags         trainings
 // @Produce      json
-// @Param        user_id query string true "User ID"
 // @Success      200  {object}  dto.TrainingResponse
 // @Success      204
 // @Failure      400  {object}  dto.ErrorResponse
@@ -940,10 +932,8 @@ func (h *TrainingHandler) CalculateTrainingTotalTime(c *gin.Context) {
 // @Failure      500  {object}  dto.ErrorResponse
 // @Router       /trainings/current [get]
 func (h *TrainingHandler) GetCurrentTraining(c *gin.Context) {
-	uidStr := c.Query("user_id")
-	uid, err := uuid.Parse(uidStr)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid user_id"})
+	uid, ok := userIDFromContext(c)
+	if !ok {
 		return
 	}
 
@@ -962,16 +952,13 @@ func (h *TrainingHandler) GetCurrentTraining(c *gin.Context) {
 // @Description  Возвращает тренировки пользователя, запланированные на сегодня
 // @Tags         trainings
 // @Produce      json
-// @Param        user_id query string true "User ID"
 // @Success      200  {array}   dto.TrainingResponse
 // @Failure      400  {object}  dto.ErrorResponse
 // @Failure      500  {object}  dto.ErrorResponse
 // @Router       /trainings/today [get]
 func (h *TrainingHandler) GetTodaysTraining(c *gin.Context) {
-	uidStr := c.Query("user_id")
-	uid, err := uuid.Parse(uidStr)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid user_id"})
+	uid, ok := userIDFromContext(c)
+	if !ok {
 		return
 	}
 
@@ -1087,7 +1074,6 @@ func (h *TrainingHandler) GetGlobalTrainingById(c *gin.Context) {
 // @Tags         trainings
 // @Produce      json
 // @Param        id path int64 true "Training ID"
-// @Param        user_id query string true "User ID"
 // @Success      200  {object}  dto.TrainingResponse
 // @Failure      400  {object}  dto.ErrorResponse
 // @Failure      403  {object}  dto.ErrorResponse
@@ -1101,10 +1087,8 @@ func (h *TrainingHandler) MarkTrainingAsDone(c *gin.Context) {
 		return
 	}
 
-	uidStr := c.Query("user_id")
-	uid, err := uuid.Parse(uidStr)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid user_id"})
+	uid, ok := userIDFromContext(c)
+	if !ok {
 		return
 	}
 
@@ -1161,7 +1145,6 @@ func (h *TrainingHandler) GetTrainingStats(c *gin.Context) {
 // @Tags         trainings
 // @Produce      json
 // @Param        id path int64 true "Training ID"
-// @Param        user_id query string true "User ID"
 // @Success      200  {object}  dto.TrainingResponse
 // @Failure      400  {object}  dto.ErrorResponse
 // @Failure      403  {object}  dto.ErrorResponse
@@ -1175,10 +1158,8 @@ func (h *TrainingHandler) StartTraining(c *gin.Context) {
 		return
 	}
 
-	uidStr := c.Query("user_id")
-	uid, err := uuid.Parse(uidStr)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid user_id"})
+	uid, ok := userIDFromContext(c)
+	if !ok {
 		return
 	}
 
@@ -1360,9 +1341,8 @@ func (h *TrainingHandler) AssignGlobalTraining(c *gin.Context) {
 		return
 	}
 
-	uid, err := uuid.Parse(req.UserID)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid user_id"})
+	uid, ok := userIDFromContext(c)
+	if !ok {
 		return
 	}
 

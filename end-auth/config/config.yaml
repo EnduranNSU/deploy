@@ -5,12 +5,15 @@ db:
   dsn: "postgres://postgres:password@postgres:5432/myapp?sslmode=disable"
   
 logger:
-  level: "debug"
+  level: debug
   console:
     enable: true
-    encoding: "text"
+    encoding: json
   file:
+    dirpath: logs
     enable: false
+    maxage:
+    maxsize:
 
 svc:
   issuer: "enduran-auth"

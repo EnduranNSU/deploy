@@ -16,22 +16,24 @@ import (
 type Server struct {
 	TrainingSvc svc.TrainingService
 	ExerciseSvc svc.ExerciseService
-	Addr string
+	Addr        string
+	AuthBaseURL string
 }
 
 func SetupServer(trainingSvc svc.TrainingService,
-	exerciseSvc svc.ExerciseService, addr string) *Server {
+	exerciseSvc svc.ExerciseService, addr string, authBaseURL string) *Server {
 	return &Server{
 		TrainingSvc: trainingSvc,
 		ExerciseSvc: exerciseSvc,
-		Addr: addr,
+		Addr:        addr,
+		AuthBaseURL: authBaseURL,
 	}
 }
 
 func (s *Server) StartServer() error {
 	eh := httpin.NewExerciseHandler(s.ExerciseSvc)
 	th := httpin.NewTrainingHandler(s.TrainingSvc)
-	engine := httpin.NewGinRouter(th, eh)
+	engine := httpin.NewGinRouter(th, eh, s.AuthBaseURL)
 
 	srv := &http.Server{
 		Addr:              s.Addr,
@@ -43,7 +45,7 @@ func (s *Server) StartServer() error {
 		log.Info().Msgf("HTTP server starting on %s", s.Addr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatal().Err(err).
-			Str("service", "trainings").Msg("HTTP server error")
+				Str("service", "trainings").Msg("HTTP server error")
 		}
 	}()
 
@@ -52,18 +54,18 @@ func (s *Server) StartServer() error {
 	<-quit
 
 	log.Info().
-	Str("service", "trainings").Msg("Shutting down server...")
+		Str("service", "trainings").Msg("Shutting down server...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Error().Err(err).
-		Str("service", "trainings").Msg("HTTP server forced to shutdown")
+			Str("service", "trainings").Msg("HTTP server forced to shutdown")
 		return err
 	}
 
 	log.Info().
-	Str("service", "trainings").Msg("Server stopped gracefully")
+		Str("service", "trainings").Msg("Server stopped gracefully")
 	return nil
 }

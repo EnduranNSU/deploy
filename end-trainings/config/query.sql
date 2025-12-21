@@ -238,7 +238,7 @@ SET
     doing = COALESCE($1, doing),
     rest = COALESCE($2, rest),
     time = COALESCE($3, time)  -- Общее время упражнения (doing + rest)
-WHERE id = $4 AND training_id = $5
+WHERE id = $4
 RETURNING 
     id,
     training_id,
@@ -513,9 +513,9 @@ RETURNING
 -- Получение статистики по тренировке (общее время выполнения и отдыха)
 SELECT 
     t.id,
-    t.total_duration,
-    t.total_rest_time,
-    t.total_exercise_time,
+    CAST(COALESCE(EXTRACT(EPOCH FROM t.total_duration)::bigint, 0) as bigint) as total_duration,
+    CAST(COALESCE(EXTRACT(EPOCH FROM t.total_rest_time)::bigint, 0)as bigint) as total_rest_time,
+    CAST(COALESCE(EXTRACT(EPOCH FROM t.total_exercise_time)::bigint, 0)as bigint) as total_exercise_time,
     COUNT(te.id) as exercise_count,
     COALESCE(SUM(te.approaches), 0) as total_approaches,
     COALESCE(SUM(te.reps), 0) as total_reps

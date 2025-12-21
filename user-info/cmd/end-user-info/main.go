@@ -36,8 +36,10 @@ func init() {
 // @version         1.0
 // @description     Сервис информации о пользователе (вес, рост, возраст и т.д.)
 // @BasePath        /api/v1
-
 // @schemes         http
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 	// Load config
 	var cfg app.Config
@@ -72,7 +74,7 @@ func main() {
 	repo := postgres.NewUserInfoRepository(db)
 	svc := svcuserinfo.New(repo)
 
-	srv := app.SetupServer(svc, cfg.Http.Addr)
+	srv := app.SetupServer(svc, cfg.Http.Addr, cfg.Auth.BaseURL)
 
 	if err := srv.StartServer(); err != nil {
 		log.Fatal().Err(err).Msg("http server stopped")

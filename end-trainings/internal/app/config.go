@@ -22,6 +22,11 @@ type Config struct {
 	Db     DbConfig
 	Logger LoggerConfig
 	Http   HttpConfig
+	Auth   AuthConfig
+}
+
+type AuthConfig struct {
+	BaseURL string `mapstructure:"base_url" default:"http://localhost:8081"`
 }
 
 type HttpConfig struct {
